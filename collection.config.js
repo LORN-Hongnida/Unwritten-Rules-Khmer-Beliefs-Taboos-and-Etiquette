@@ -11,7 +11,7 @@ const collection = {
   name: "Unwritten Rules: Khmer Beliefs, Taboos and Etiquette",
 
   // One sentence: what is this archive, and why does it matter?
-  description: "The archive will document things that people are told they should or should not do, why these rules exist, and whether people still follow them today.",
+  description: "Preserving oral traditions, ancient household taboos, and etiquette taught by Cambodian elders—exploring why these rules exist and whether younger generations still practice them today.",
 
   // Who is building this archive? Your name, as you want it shown.
   curator: "LORN_Hongnida",
@@ -21,3 +21,4 @@ const collection = {
 };
 
 export default collection;
+
