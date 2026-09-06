@@ -99,7 +99,6 @@ export default function Home() {
             </div>
 
             <nav className="header-nav" aria-label="Primary">
-              <a href="#archive-scope" className="header-nav-link" onClick={handleNavClick}>Scope</a>
               <a href="#archive-entries" className="header-nav-link" onClick={handleNavClick}>Entries</a>
               <a href="#academic-note" className="header-nav-link" onClick={handleNavClick}>Academic Note</a>
             </nav>
@@ -141,41 +140,14 @@ export default function Home() {
       <div className="portal-container">
         <div className="portal-grid">
 
-          <main className="main-panel">
-            <section className="description-section" id="archive-scope">
-              <span className="section-label">Archive Scope / អំពីបណ្ណសារ</span>
-              <p className="archive-description">{collection.description}</p>
-            </section>
-
-            <div className="meta-grid">
-              <div className="info-card">
-                <p className="card-label">Curated by</p>
-                <p className="card-value">{collection.curator}</p>
-              </div>
-              <div className="info-card">
-                <p className="card-label">Source</p>
-                <p className="card-value">{collection.source}</p>
-              </div>
-            </div>
-          </main>
-
-          <aside className="sidebar-panel">
-            <div className="status-card">
-              <span className="status-number">{entries.length}</span>
-              <p className="status-counter-text">
-                {entries.length === 1
-                  ? "entry in the archive"
-                  : "entries in the archive"}
-              </p>
-            </div>
-          </aside>
+          <main className="main-panel" />
 
         </div>
 
         <section className="entries-section" id="archive-entries">
           <div className="entries-header">
             <h2 className="entries-title">Archive Entries / កំណត់ត្រា</h2>
-            <span className="entries-count">
+            <span className="entries-count" style={{ fontSize: '1.5rem', fontWeight: 'bold', display: 'block', margin: '1rem 0' }}>
               {entries.length} recorded{" "}
               {entries.length === 1 ? "belief" : "beliefs"}
             </span>
