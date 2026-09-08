@@ -7,6 +7,18 @@ import EntryCard from "../components/EntryCard";
 
 export default function Home() {
   const [isScrolled, setIsScrolled] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+
+  // Filter entries based on search term: match any field containing the term
+  const filteredEntries = entries.filter((entry) => {
+    if (!searchTerm) return true;
+    const lowerSearchTerm = searchTerm.toLowerCase();
+    return Object.values(entry).some(
+      (value) =>
+        value != null &&
+        value.toString().toLowerCase().includes(lowerSearchTerm)
+    );
+  });
 
   useEffect(() => {
     // Separate thresholds: a single one makes the header flicker when you
@@ -146,17 +158,53 @@ export default function Home() {
 
         <section className="entries-section" id="archive-entries">
           <div className="entries-header">
-            <h2 className="entries-title">Archive Entries / កំណត់ត្រា</h2>
+            <h2 className="entries-title">Archive Entries</h2>
             <span className="entries-count" style={{ fontSize: '1.5rem', fontWeight: 'bold', display: 'block', margin: '1rem 0' }}>
-              {entries.length} recorded{" "}
-              {entries.length === 1 ? "belief" : "beliefs"}
+              {filteredEntries.length} recorded{" "}
+              {filteredEntries.length === 1 ? "belief" : "beliefs"}
+              {searchTerm && filteredEntries.length !== entries.length && ` (filtered from ${entries.length})`}
             </span>
           </div>
 
+          <div className="search-container" style={{ marginBottom: '1.5rem' }}>
+            <input
+              type="text"
+              placeholder="Search entries... / ស្វែងរកតារាងការ... / អត្ថបទ ចំណងជើង ទីតាំង អ្នកចូលរួម..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="search-input"
+              style={{
+                width: '100%',
+                padding: '0.75rem 1rem',
+                fontSize: '1rem',
+                border: '1px solid #ccc',
+                borderRadius: '0.5rem',
+                outline: 'none',
+                transition: 'border-color 0.2s',
+              }}
+            />
+          </div>
+
           <div className="entries-list">
-            {entries.map((entry) => (
-              <EntryCard key={entry.title} entry={entry} />
-            ))}
+            {filteredEntries.length > 0 ? (
+              filteredEntries.map((entry) => (
+                <EntryCard key={entry.title} entry={entry} />
+              ))
+            ) : (
+              <div className="empty-state" style={{
+                textAlign: 'center',
+                padding: '3rem 1rem',
+                color: '#666',
+                fontStyle: 'italic',
+              }}>
+                <p style={{ fontSize: '1.1rem', marginBottom: '0.5rem' }}>
+                  No entries found / រកមិនឃើញកំណត់ត្រា
+                </p>
+                <p style={{ fontSize: '0.9rem' }}>
+                  Try a different search term / សូមសាកល្បងពាក្យស្វែងរកផ្សេង
+                </p>
+              </div>
+            )}
           </div>
         </section>
       </div>

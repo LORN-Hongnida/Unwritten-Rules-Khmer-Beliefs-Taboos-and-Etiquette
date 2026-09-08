@@ -882,37 +882,175 @@ body::before {
 
 .entries-header {
   display: flex;
-  align-items: baseline;
+  align-items: flex-start;
   justify-content: space-between;
   gap: 24px;
-  margin-bottom: 28px;
-  padding-bottom: 14px;
-  border-bottom: 1px solid var(--parchment-border);
+  margin-bottom: 32px;
+  padding-bottom: 20px;
+  border-bottom: 2px solid var(--temple-gold);
 }
 
 .entries-title {
   font-family: var(--font-serif-title);
-  font-size: 26px;
+  font-size: 28px;
   font-weight: 700;
   color: var(--krama-red-dark);
   margin: 0;
   letter-spacing: 0.5px;
+  line-height: 1.3;
+}
+
+.entries-title-sub {
+  font-family: var(--font-khmer-headline);
+  font-size: 16px;
+  color: var(--sandstone-muted);
+  font-weight: 400;
+  margin: 4px 0 0 0;
 }
 
 .entries-count {
   font-family: var(--font-sans-khmer);
-  font-size: 11px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 1.5px;
-  color: var(--sandstone-muted);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--temple-gold-dark);
+  background: linear-gradient(135deg, rgba(197, 155, 39, 0.12) 0%, rgba(197, 155, 39, 0.06) 100%);
+  padding: 12px 18px;
+  border-radius: 6px;
+  border: 1px solid rgba(197, 155, 39, 0.3);
+  text-align: center;
+  min-width: 130px;
   white-space: nowrap;
+}
+
+.entries-count-number {
+  display: block;
+  font-size: 26px;
+  font-weight: 700;
+  color: var(--krama-red);
+  line-height: 1;
+  margin-bottom: 3px;
+}
+
+.entries-count-label {
+  display: block;
+  font-size: 11px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--sandstone-muted);
+}
+
+/* Search Box */
+.search-box {
+  position: relative;
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px dashed var(--parchment-border);
+}
+
+.search-input {
+  width: 100%;
+  padding: 14px 16px 14px 48px;
+  font-family: var(--font-sans-khmer);
+  font-size: 15px;
+  color: var(--sandstone-dark);
+  background-color: var(--parchment-card);
+  border: 2px solid var(--parchment-border);
+  border-radius: 8px;
+  transition: border-color 0.25s, box-shadow 0.25s;
+}
+
+.search-input::placeholder {
+  color: var(--sandstone-muted);
+  font-style: italic;
+}
+
+.search-input:hover {
+  border-color: var(--krama-red-light);
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: var(--temple-gold);
+  box-shadow: 0 0 0 4px rgba(197, 155, 39, 0.12);
+}
+
+.search-icon {
+  position: absolute;
+  left: 16px;
+  top: calc(50% + 10px);
+  transform: translateY(-50%);
+  color: var(--sandstone-muted);
+  pointer-events: none;
+  font-size: 16px;
+}
+
+.search-clear {
+  position: absolute;
+  right: 12px;
+  top: calc(50% + 10px);
+  transform: translateY(-50%);
+  padding: 4px 10px;
+  font-size: 11px;
+  color: var(--sandstone-muted);
+  background: transparent;
+  border: 1px solid var(--parchment-border);
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: var(--font-sans-khmer);
+}
+
+.search-clear:hover {
+  background: var(--parchment-border);
+  color: var(--sandstone-dark);
 }
 
 .entries-list {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
   gap: 28px;
+}
+
+/* Empty state */
+.empty-state {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 60px 24px;
+  background-color: var(--parchment-card);
+  border: 1px dashed var(--parchment-border);
+  border-radius: 8px;
+}
+
+.empty-state-icon {
+  font-size: 36px;
+  color: var(--temple-gold);
+  margin-bottom: 16px;
+  opacity: 0.7;
+}
+
+.empty-state-title {
+  font-family: var(--font-serif-title);
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--sandstone-dark);
+  margin: 0 0 6px 0;
+}
+
+.empty-state-title-khmer {
+  display: block;
+  font-family: var(--font-khmer-headline);
+  font-size: 14px;
+  color: var(--sandstone-muted);
+  font-weight: 400;
+  margin-top: 4px;
+}
+
+.empty-state-hint {
+  font-size: 13px;
+  color: var(--sandstone-muted);
+  font-style: italic;
+  margin: 12px 0 0 0;
 }
 
 /* Individual entry sheet, matching the archival paper treatment */

@@ -23,6 +23,10 @@ export default function EntryCard({ entry }) {
           <span className="entry-meta-item">
             Still believed? {entry.stillBelieved}
           </span>
+          <span className="entry-meta-dot">•</span>
+          <span className="entry-meta-item">
+            Place: {entry.place}
+          </span>
         </div>
       </div>
     </article>
