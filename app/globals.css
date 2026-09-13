@@ -1498,314 +1498,6 @@ textarea::placeholder {
 }
 
 /* Individual entry sheet, matching the archival paper treatment */
-.entry-card {
-  background-color: var(--parchment-card);
-  background-image: var(--paper-grain);
-  background-repeat: repeat;
-  border: 1px solid var(--parchment-border);
-  border-left: 4px solid var(--krama-red);
-  border-radius: 4px;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  box-shadow:
-    2px 2px 0px #E5D9BD,
-    3px 3px 0px var(--parchment-border),
-    6px 6px 18px rgba(42, 26, 10, 0.08);
-  transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
-}
-
-.entry-card:hover {
-  transform: translateY(-3px);
-  box-shadow:
-    2px 2px 0px #E5D9BD,
-    3px 3px 0px var(--parchment-border),
-    0 14px 24px rgba(42, 26, 10, 0.1),
-    0 0 12px rgba(197, 155, 39, 0.15);
-  border-color: var(--temple-gold);
-}
-
-.entry-image-placeholder {
-  height: 160px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background-color: rgba(215, 203, 179, 0.22);
-  border-bottom: 1px dashed var(--parchment-border);
-  font-family: var(--font-sans-khmer);
-  font-size: 11px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 2px;
-  color: var(--sandstone-muted);
-  opacity: 0.75;
-}
-
-.entry-body {
-  padding: 28px 28px 24px 28px;
-  display: flex;
-  flex-direction: column;
-  flex-grow: 1;
-}
-
-.entry-category {
-  font-family: var(--font-sans-khmer);
-  font-size: 10px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 1.5px;
-  color: var(--krama-red);
-  display: inline-block;
-  align-self: flex-start;
-  padding: 3px 10px;
-  border: 1px solid rgba(164, 74, 56, 0.3);
-  border-radius: 2px;
-  margin-bottom: 14px;
-}
-
-.entry-title {
-  font-family: var(--font-serif-title);
-  font-size: 20px;
-  font-weight: 700;
-  line-height: 1.35;
-  color: var(--sandstone-dark);
-  margin: 0 0 12px 0;
-}
-
-.entry-text {
-  font-size: 15px;
-  line-height: 1.8;
-  color: var(--sandstone-dark);
-  margin: 0 0 14px 0;
-}
-
-/* Annotation block for the "actual meaning" gloss */
-.entry-reason {
-  font-size: 14px;
-  line-height: 1.75;
-  color: var(--sandstone-muted);
-  font-style: italic;
-  margin: 0 0 16px 0;
-  padding: 14px 16px;
-  background-color: rgba(197, 155, 39, 0.07);
-  border-left: 2px solid var(--temple-gold);
-  border-radius: 0 2px 2px 0;
-}
-
-.entry-reason-label {
-  display: block;
-  font-family: var(--font-sans-khmer);
-  font-size: 10px;
-  font-weight: 700;
-  font-style: normal;
-  text-transform: uppercase;
-  letter-spacing: 1.5px;
-  color: var(--temple-gold-dark);
-  margin-bottom: 6px;
-}
-
-.entry-meta {
-  margin-top: auto;
-  padding-top: 16px;
-  border-top: 1px solid var(--parchment-border);
-  font-family: var(--font-sans-khmer);
-  font-size: 12px;
-  line-height: 1.7;
-  color: var(--sandstone-muted);
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: 8px;
-}
-
-.entry-meta strong {
-  color: var(--krama-red);
-  font-weight: 700;
-}
-
-.entry-meta-dot {
-  color: var(--temple-gold);
-  opacity: 0.7;
-}
-
-/* ==========================================================================
-   RESPONSIVE ADJUSTMENTS
-   ========================================================================== */
-@media (max-width: 900px) {
-  .portal-grid {
-    grid-template-columns: 1fr;
-    gap: 32px;
-  }
-  
-  /* Clears the 22px decorative frame and corner flourishes so hero copy never
-     sits on top of the border design */
-  .portal-header.hero-mode {
-    padding: 56px 40px 72px 40px;
-  }
-
-  .portal-header.scrolled-mode {
-    padding: 0 16px;
-  }
-
-  .portal-title {
-    font-size: 28px;
-  }
-
-  .scrolled-mode .portal-title {
-    font-size: 13px;
-    max-width: 100%;
-  }
-
-  .hero-split {
-    grid-template-columns: 1fr;
-    gap: 28px;
-    margin-top: 28px;
-  }
-
-  .hero-artifact svg {
-    max-width: 220px;
-  }
-
-  .header-brand {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 8px;
-  }
-
-  /* Lets the nav panel wrap below the brand/burger line */
-  .header-top-row {
-    flex-wrap: wrap;
-  }
-
-  /* Keeps the indicator inside the bottom foliate band */
-  .hero-scroll-indicator {
-    bottom: 40px;
-  }
-
-  .header-burger {
-    display: flex;
-  }
-
-  /* Collapsed bar only: logo stays, wordmark goes — too narrow for both.
-     The hero keeps the full wordmark. */
-  .scrolled-mode .header-kicker-text {
-    display: none;
-  }
-
-  .header-nav-link {
-    font-size: 10px;
-    letter-spacing: 1.2px;
-  }
-
-  /* Collapses into a panel under the bar, opened by the burger */
-  .header-nav {
-    display: none;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 14px;
-    width: 100%;
-    margin-top: 14px;
-    padding-top: 14px;
-    border-top: 1px solid rgba(229, 195, 101, 0.15);
-  }
-
-  .header-nav.is-open {
-    display: flex;
-  }
-
-  /* The bar is a fixed 60px, so the open panel has to float over the page
-     rather than expand the header */
-  .scrolled-mode .header-nav.is-open {
-    position: absolute;
-    top: 100%;
-    left: 0;
-    margin-top: 0;
-    padding: 16px;
-    background: #2E0C07;
-    border-bottom: 2px solid var(--temple-gold);
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35);
-    z-index: 101;
-  }
-
-  /* `display: contents` on the wrappers would otherwise strand the panel's
-     absolute positioning */
-  .scrolled-mode .header-container {
-    position: static;
-  }
-
-  /* The header clips its grain/frame in hero mode, but that same clip would
-     swallow the dropdown, which hangs entirely below the 60px bar */
-  .portal-header.scrolled-mode {
-    overflow: visible;
-  }
-
-  .scrolled-mode .header-burger {
-    order: 3;
-  }
-
-  .portal-container {
-    padding: 0 16px 48px 16px;
-    margin: 24px auto;
-  }
-  
-  .description-section,
-  .status-card {
-    min-height: auto;
-    padding: 32px 32px 32px 48px;
-  }
-  
-  .description-section::before {
-    left: 32px;
-  }
-  
-  .meta-grid {
-    grid-template-columns: 1fr;
-    gap: 16px;
-  }
-
-  .footer-top-row {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 20px;
-  }
-
-  .footer-academic {
-    align-items: flex-start;
-    text-align: left;
-  }
-
-  .footer-bottom-row {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 16px;
-  }
-
-  .footer-links {
-    margin-top: 4px;
-  }
-
-  .entries-list {
-    grid-template-columns: 1fr;
-    gap: 20px;
-  }
-
-  .entries-header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 8px;
-  }
-
-  .entries-title {
-    font-size: 22px;
-  }
-}
-
-/* ==========================================================================
-   Site navigation — revamped Gold & Teak app bar
-   Replaces the old .portal-header chrome. Sticky, translucent, and tinted
-   by whichever --accent the surrounding section is using.
-   ========================================================================== */
-
 .site-nav {
   position: sticky;
   top: 0;
@@ -3047,4 +2739,473 @@ button:hover .kbach-micro {
     animation: none;
     opacity: 0.3;
   }
+}
+
+/* ==========================================================================
+   Entry cards — ported from the reference RuleCard
+   Each card is tinted by its own category rather than the active theme, so a
+   mixed grid reads as three distinct realms sitting side by side.
+   ========================================================================== */
+
+/* Inner shadows read as grime on a light card; keep them dark-mode only. */
+[data-mode="dark"] {
+  --shadow-ink: rgba(0, 0, 0, 0.3);
+}
+
+[data-mode="light"] {
+  --shadow-ink: rgba(90, 70, 45, 0.1);
+}
+
+.entries-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 20px;
+}
+
+.entry-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  overflow: hidden;
+  border-radius: 16px;
+  border: 1px solid var(--card-border);
+  background-color: var(--surface);
+  background-image: var(--card-bg);
+  cursor: pointer;
+  transition: transform 0.5s ease, border-color 0.5s ease, box-shadow 0.5s ease;
+}
+
+.entry-card:hover {
+  transform: translateY(-4px);
+  border-color: var(--card-border-hover);
+  box-shadow: var(--card-shadow-hover);
+}
+
+/* --- Ornament ------------------------------------------------------------ */
+
+.entry-card-frieze {
+  position: absolute;
+  left: 0;
+  right: 0;
+  z-index: 1;
+  line-height: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+.entry-card-frieze-top {
+  top: 0;
+  opacity: 0.5;
+}
+
+.entry-card-frieze-bottom {
+  bottom: 0;
+  opacity: 0.3;
+  transform: rotate(180deg);
+}
+
+.entry-card:hover .entry-card-frieze-top {
+  opacity: 0.9;
+}
+
+.entry-card:hover .entry-card-frieze-bottom {
+  opacity: 0.7;
+}
+
+.entry-card-corner {
+  position: absolute;
+  z-index: 1;
+  line-height: 0;
+  pointer-events: none;
+  color: var(--kbach);
+  transition: opacity 0.3s ease;
+}
+
+.entry-card-corner-tl,
+.entry-card-corner-tr {
+  top: 8px;
+  opacity: 0.45;
+}
+
+.entry-card-corner-bl,
+.entry-card-corner-br {
+  bottom: 8px;
+  opacity: 0.3;
+}
+
+.entry-card-corner-tl,
+.entry-card-corner-bl {
+  left: 8px;
+}
+
+.entry-card-corner-tr,
+.entry-card-corner-br {
+  right: 8px;
+}
+
+.entry-card:hover .entry-card-corner-tl,
+.entry-card:hover .entry-card-corner-tr {
+  opacity: 0.95;
+}
+
+.entry-card:hover .entry-card-corner-bl,
+.entry-card:hover .entry-card-corner-br {
+  opacity: 0.75;
+}
+
+/* --- Body ---------------------------------------------------------------- */
+
+.entry-card-body {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  padding: 22px;
+}
+
+.entry-card-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+/* Reserved for the save/bookmark control in a later sprint. Empty today, but
+   it keeps the header layout from shifting once that button lands. */
+.entry-card-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+.entry-card-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 7px;
+  border-radius: 999px;
+  border: 1px solid var(--badge-border);
+  background-color: var(--badge-bg);
+  color: var(--badge-text);
+  font-size: 10px;
+  font-weight: 500;
+}
+
+.entry-card-badge svg {
+  width: 9px;
+  height: 9px;
+}
+
+.entry-card-badge-km {
+  font-family: var(--font-sans-khmer);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  line-height: 1.6;
+}
+
+.entry-card-badge-en {
+  font-family: var(--font-serif-title);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--ink-muted);
+}
+
+/* --- Motif banner --------------------------------------------------------- */
+
+.entry-card-banner {
+  position: relative;
+  overflow: hidden;
+  margin-bottom: 16px;
+  padding: 12px;
+  border-radius: 12px;
+  border: 1px solid var(--card-banner-border);
+  background-image: var(--card-banner);
+  box-shadow: inset 0 1px 4px rgba(0, 0, 0, 0.22);
+}
+
+/* The inset and drop shadows above are tuned for dark surfaces; on a light
+   card they read as grime, so they are lightened here. */
+[data-mode="light"] .entry-card-banner {
+  box-shadow: inset 0 1px 3px rgba(60, 40, 20, 0.10);
+}
+
+[data-mode="light"] .entry-card-medallion {
+  box-shadow: 0 1px 3px rgba(60, 40, 20, 0.12);
+}
+
+.entry-card-banner-watermark {
+  position: absolute;
+  right: 8px;
+  bottom: -4px;
+  opacity: 0.2;
+  color: var(--accent);
+  pointer-events: none;
+  transition: transform 0.5s ease, opacity 0.5s ease;
+}
+
+.entry-card:hover .entry-card-banner-watermark {
+  transform: scale(1.1);
+  opacity: 0.35;
+}
+
+.entry-card-banner-main {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  padding-right: 48px;
+}
+
+.entry-card-medallion {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  padding: 10px;
+  border-radius: 12px;
+  border: 1px solid var(--card-banner-border);
+  background-color: var(--input-bg);
+  color: var(--accent);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.18);
+}
+
+.entry-card-banner-title {
+  min-width: 0;
+  font-family: var(--font-sans-khmer);
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.5;
+  color: var(--heading-text);
+}
+
+/* --- Titles and text ------------------------------------------------------ */
+
+.entry-card-title-km {
+  margin: 0 0 6px;
+  font-family: var(--font-sans-khmer);
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1.5;
+  color: var(--heading-text);
+}
+
+.entry-card-title {
+  margin: 0 0 12px;
+  /* Plus Jakarta Sans rather than the Georgia-class display serif: at card
+     sizes that serif is narrow enough to read as compressed. */
+  font-family: var(--font-serif-body);
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.45;
+  letter-spacing: -0.005em;
+  color: var(--ink);
+}
+
+.entry-card-text {
+  flex: 1;
+  margin: 0 0 16px;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  font-size: 12.5px;
+  line-height: 1.625;
+  color: var(--ink-muted);
+}
+
+.entry-card-text strong {
+  font-family: var(--font-serif-title);
+  font-weight: 400;
+  color: var(--accent);
+}
+
+/* --- Footer --------------------------------------------------------------- */
+
+.entry-card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding-top: 10px;
+  border-top: 1px solid var(--card-border);
+  font-size: 11px;
+  color: var(--ink-muted);
+}
+
+.entry-card-place {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  color: var(--ink-muted);
+}
+
+.entry-card-place svg {
+  flex-shrink: 0;
+  color: var(--accent);
+}
+
+.entry-card-place span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.entry-card-explore {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+  font-family: var(--font-serif-title);
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--accent);
+  transition: transform 0.3s ease;
+}
+
+.entry-card:hover .entry-card-explore {
+  transform: translateX(4px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .entry-card,
+  .entry-card-frieze,
+  .entry-card-corner,
+  .entry-card-banner-watermark,
+  .entry-card-explore {
+    transition: none;
+  }
+
+  .entry-card:hover {
+    transform: none;
+  }
+
+  .entry-card:hover .entry-card-banner-watermark,
+  .entry-card:hover .entry-card-explore {
+    transform: none;
+  }
+}
+
+/* A card is tinted by its own category, not the active theme, so an
+   unfiltered grid shows all three realms side by side. */
+
+[data-mode="dark"] .entry-card[data-category="etiquette"] {
+  --accent: #dfbe62;
+  --accent-2: #c59b27;
+  --kbach: #dfbe62;
+  --heading-text: #edd68a;
+  --card-bg: linear-gradient(to bottom, #220e1b, #13060f);
+  --card-border: rgba(223, 190, 98, 0.25);
+  --card-border-hover: rgba(223, 190, 98, 0.7);
+  --card-shadow-hover: 0 8px 30px rgba(223,190,98,0.18);
+  --card-banner: linear-gradient(to right, #2e1223, #3d1830, #210c1a);
+  --card-banner-border: rgba(223, 190, 98, 0.25);
+  --badge-bg: rgba(41, 16, 32, 0.85);
+  --badge-border: rgba(223, 190, 98, 0.4);
+  --badge-text: #f6e6aa;
+  --input-bg: #11050d;
+  --ink: #f5eaef;
+  --ink-muted: #c7afba;
+}
+
+[data-mode="dark"] .entry-card[data-category="beliefs"] {
+  --accent: #e08712;
+  --accent-2: #f59e0b;
+  --kbach: #e08712;
+  --heading-text: #f59e0b;
+  --card-bg: linear-gradient(to bottom, #271004, #140602);
+  --card-border: rgba(224, 135, 18, 0.25);
+  --card-border-hover: rgba(245, 158, 11, 0.7);
+  --card-shadow-hover: 0 8px 30px rgba(224,135,18,0.2);
+  --card-banner: linear-gradient(to right, #381505, #481c08, #280e03);
+  --card-banner-border: rgba(224, 135, 18, 0.25);
+  --badge-bg: rgba(53, 21, 5, 0.85);
+  --badge-border: rgba(224, 135, 18, 0.45);
+  --badge-text: #fed7aa;
+  --input-bg: #130602;
+  --ink: #ede0d4;
+  --ink-muted: #c4ad99;
+}
+
+[data-mode="dark"] .entry-card[data-category="taboos"] {
+  --accent: #93a7be;
+  --accent-2: #b45309;
+  --kbach: #93a7be;
+  --heading-text: #e2e8f0;
+  --card-bg: linear-gradient(to bottom, #121c30, #0a101d);
+  --card-border: rgba(71, 85, 105, 0.3);
+  --card-border-hover: rgba(147, 167, 190, 0.7);
+  --card-shadow-hover: 0 8px 30px rgba(147,167,190,0.14);
+  --card-banner: linear-gradient(to right, #17233c, #203152, #121c30);
+  --card-banner-border: rgba(71, 85, 105, 0.3);
+  --badge-bg: rgba(22, 32, 53, 0.85);
+  --badge-border: rgba(71, 85, 105, 0.45);
+  --badge-text: #cbd5e1;
+  --input-bg: #080d17;
+  --ink: #e2e8f0;
+  --ink-muted: #94a3b8;
+}
+
+[data-mode="light"] .entry-card[data-category="etiquette"] {
+  --accent: #78283d;
+  --accent-2: #b8860b;
+  --kbach: #78283d;
+  --heading-text: #581726;
+  --card-bg: linear-gradient(to bottom, #ffffff, #faf3f3);
+  --card-border: rgba(201, 154, 44, 0.25);
+  --card-border-hover: #78283d;
+  --card-shadow-hover: 0 8px 30px rgba(120,40,61,0.12);
+  --card-banner: linear-gradient(to right, #f3e4e4, #faeded, #eed8d8);
+  --card-banner-border: rgba(201, 154, 44, 0.2);
+  --badge-bg: #f4e7e7;
+  --badge-border: rgba(201, 154, 44, 0.35);
+  --badge-text: #681e30;
+  --input-bg: #f8f1f1;
+  --ink: #29141b;
+  --ink-muted: #694f57;
+}
+
+[data-mode="light"] .entry-card[data-category="beliefs"] {
+  --accent: #d97706;
+  --accent-2: #f59e0b;
+  --kbach: #d97706;
+  --heading-text: #92400e;
+  --card-bg: linear-gradient(to bottom, #ffffff, #fdf6ea);
+  --card-border: rgba(217, 119, 6, 0.3);
+  --card-border-hover: #b45309;
+  --card-shadow-hover: 0 8px 30px rgba(217,119,6,0.12);
+  --card-banner: linear-gradient(to right, #fef3c7, #fffbeb, #fde68a);
+  --card-banner-border: rgba(217, 119, 6, 0.25);
+  --badge-bg: #fef3c7;
+  --badge-border: rgba(245, 158, 11, 0.5);
+  --badge-text: #92400e;
+  --input-bg: #fffbf0;
+  --ink: #2e1909;
+  --ink-muted: #6d5139;
+}
+
+[data-mode="light"] .entry-card[data-category="taboos"] {
+  --accent: #3a506b;
+  --accent-2: #5c768d;
+  --kbach: #3a506b;
+  --heading-text: #1a2c42;
+  --card-bg: linear-gradient(to bottom, #ffffff, #ecf1f6);
+  --card-border: rgba(159, 179, 200, 0.35);
+  --card-border-hover: #3a506b;
+  --card-shadow-hover: 0 8px 30px rgba(58,80,107,0.12);
+  --card-banner: linear-gradient(to right, #e0e7ee, #edf3f8, #d5e0eb);
+  --card-banner-border: rgba(159, 179, 200, 0.3);
+  --badge-bg: #dfe7ef;
+  --badge-border: rgba(130, 154, 177, 0.45);
+  --badge-text: #1e324b;
+  --input-bg: #e9f0f5;
+  --ink: #132238;
+  --ink-muted: #4b5e73;
 }

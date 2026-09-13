@@ -136,10 +136,10 @@ export default function Home() {
             />
           </div>
 
-          <div className="entries-list">
+          <div className="entries-grid">
             {filteredEntries.length > 0 ? (
               filteredEntries.map((entry) => (
-                <EntryCard key={entry.title} entry={entry} />
+                <EntryCard key={entry.id} entry={entry} onSelect={() => {}} />
               ))
             ) : (
               <div className="empty-state" style={{
