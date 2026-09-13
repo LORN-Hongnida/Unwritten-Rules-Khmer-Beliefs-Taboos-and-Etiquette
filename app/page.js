@@ -13,11 +13,6 @@ import themes from "../data/themes.js";
 import { ThemeVibeIcon } from "../components/KbachMotifs";
 import { useTheme } from "../components/ThemeProvider";
 
-const NAV_LINKS = [
-  { href: "/browse", label: "Browse Archive" },
-  { href: "#academic-note", label: "Academic Note" },
-];
-
 // Counted from the entries themselves so the hero stat cannot drift.
 const CATEGORY_COUNT = new Set(entries.map((entry) => entry.category)).size;
 
@@ -68,7 +63,6 @@ export default function Home() {
 
       <div className="page-content">
       <SiteNav
-        links={NAV_LINKS}
         selectedTheme={selectedTheme}
         onSelectTheme={setSelectedTheme}
         isDark={isDark}

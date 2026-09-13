@@ -1653,6 +1653,17 @@ textarea::placeholder {
   color: var(--ink);
 }
 
+/* The link set is identical on every page, so the current route is marked
+   rather than omitted. */
+.site-nav-link.is-active {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.site-nav-link.is-active::after {
+  transform: scaleX(1);
+}
+
 .site-nav-link:hover::after,
 .site-nav-link:focus-visible::after {
   transform: scaleX(1);

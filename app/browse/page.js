@@ -12,11 +12,6 @@ import ThemeAtmosphereBackdrop from "../../components/ThemeAtmosphereBackdrop";
 import { ThemeVibeIcon } from "../../components/KbachMotifs";
 import { useTheme } from "../../components/ThemeProvider";
 
-const NAV_LINKS = [
-  { href: "/", label: "The Sanctuary" },
-  { href: "/browse", label: "Browse Archive" },
-];
-
 // How many entries sit in each category, for the filter pills.
 const categoryCounts = entries.reduce(
   (acc, entry) => ({ ...acc, [entry.category]: (acc[entry.category] || 0) + 1 }),
@@ -48,7 +43,6 @@ export default function BrowsePage() {
 
       <div className="page-content">
         <SiteNav
-          links={NAV_LINKS}
           selectedTheme={selectedTheme}
           onSelectTheme={setSelectedTheme}
           isDark={isDark}

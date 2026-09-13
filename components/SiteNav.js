@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { ThemeVibeIcon } from "./KbachMotifs";
 import ThemeDropdown from "./ThemeDropdown";
 
@@ -35,6 +36,12 @@ function SunIcon() {
 }
 import themes from "../data/themes.js";
 
+// The same on every page: a nav that changes per route is disorienting.
+const NAV_LINKS = [
+  { href: "/", label: "Home" },
+  { href: "/browse", label: "Browse Archive" },
+];
+
 // Scrolls to an element, honouring a reader's reduced-motion preference.
 function scrollToTarget(target) {
   const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -42,7 +49,6 @@ function scrollToTarget(target) {
 }
 
 export default function SiteNav({
-  links,
   selectedTheme = "all",
   onSelectTheme,
   isDark = true,
@@ -50,6 +56,7 @@ export default function SiteNav({
 }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isThemeOpen, setIsThemeOpen] = useState(false);
+  const pathname = usePathname();
 
   const motif = themes[selectedTheme].motifType;
 
@@ -149,7 +156,7 @@ export default function SiteNav({
         </div>
 
         <div className={`site-nav-links ${isMenuOpen ? "is-open" : ""}`}>
-          {links.map((link) =>
+          {NAV_LINKS.map((link) =>
             link.href.startsWith("#") ? (
               <a
                 key={link.href}
@@ -163,7 +170,8 @@ export default function SiteNav({
               <Link
                 key={link.href}
                 href={link.href}
-                className="site-nav-link"
+                className={`site-nav-link ${pathname === link.href ? "is-active" : ""}`}
+                aria-current={pathname === link.href ? "page" : undefined}
                 onClick={() => setIsMenuOpen(false)}
               >
                 {link.label}
