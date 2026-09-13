@@ -24,6 +24,49 @@
   --font-serif-body: 'Nokora', 'Georgia', serif;
   --font-sans-khmer: 'Kantumruy Pro', 'Segoe UI', Roboto, sans-serif;
   --font-khmer-headline: 'Moul', serif;
+
+  /* ------------------------------------------------------------------
+     Gold & Teak palette — the revamped dark surface.
+     Added alongside the parchment tokens above so both can coexist
+     while the revamp moves through the page section by section.
+     ------------------------------------------------------------------ */
+  --teak-950: #0f0704;
+  --teak-900: #1a0c06;
+  --teak-850: #241108;
+  --teak-800: #2a1309;
+  --teak-700: #3b1c0e;
+  --teak-600: #532815;
+
+  --gold: #e5c158;
+  --gold-soft: rgba(229, 193, 88, 0.25);
+  --gold-strong: rgba(229, 193, 88, 0.5);
+  --bronze: #f59e0b;
+
+  --ink: #ede0d4;          /* body text on teak */
+  --ink-muted: #bfa895;    /* secondary text */
+  --ink-faint: #a89078;    /* placeholders */
+
+  /* Per-category accent. Sections set data-category to retint themselves. */
+  --accent: var(--gold);
+  --accent-glow: rgba(229, 193, 88, 0.18);
+}
+
+/* Category accents. The reference ships a full theme table per category;
+   here one accent variable carries the difference and every surface
+   inherits it. */
+[data-category="beliefs"] {
+  --accent: #e5c158;
+  --accent-glow: rgba(229, 193, 88, 0.18);
+}
+
+[data-category="taboos"] {
+  --accent: #b07cc6;
+  --accent-glow: rgba(176, 124, 198, 0.18);
+}
+
+[data-category="etiquette"] {
+  --accent: #6fae8e;
+  --accent-glow: rgba(111, 174, 142, 0.18);
 }
 
 /* Base HTML Styles */
