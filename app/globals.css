@@ -21,7 +21,10 @@
   --paper-grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='p'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23p)' opacity='0.35'/%3E%3C/svg%3E");
 
   /* The reference's three families, matched exactly (see _reference/index.css). */
-  --font-serif-title: 'Cinzel', serif;
+  /* Display role. Latin text is all Plus Jakarta Sans: the display face and
+     the body face are the same family at different weights, which keeps the
+     type system to two families including Khmer. */
+  --font-serif-title: 'Plus Jakarta Sans', sans-serif;
   --font-serif-body: 'Plus Jakarta Sans', sans-serif;
   --font-sans-khmer: 'Kantumruy Pro', 'Noto Serif Khmer', serif;
 
@@ -53,46 +56,46 @@
   /* "All traditions" is deliberately a composite rather than a fourth palette:
      royal gold from Etiquette, hearth amber from Beliefs, and a cool moonlit
      cast from Taboos, so the default reads as every realm at once. */
-  --accent: #f0d9a0;
-  --accent-2: #93a7be;
-  --accent-glow: rgba(240, 217, 160, 0.16);
-  --surface: #0b0a0f;
+  --accent: #e8a33d;
+  --accent-2: #c4a2d8;
+  --accent-glow: rgba(232, 163, 61, 0.16);
+  --surface: #0c0c0e;
   --ink: #ede0d4;
   --ink-muted: #bfa895;
-  --card-subtitle: #f59e0b;
+  --card-subtitle: #c4a2d8;
   --tab-inactive: #b8a28e;
-  --hero-gradient: linear-gradient(to bottom, #1f1206, #150d12, #0b0710);
-  --nav-bg: rgba(22, 10, 4, 0.92);
-  --nav-border: rgba(229, 193, 88, 0.25);
-  --card-bg: linear-gradient(to bottom, #1f0d06, #120603);
-  --card-border: rgba(229, 193, 88, 0.25);
-  --card-border-hover: rgba(229, 193, 88, 0.7);
-  --card-shadow-hover: 0 8px 30px rgba(229,193,88,0.18);
-  --card-banner: linear-gradient(to right, #2e1409, #3a1a0c, #1e0a04);
-  --card-banner-border: rgba(229, 193, 88, 0.2);
-  --search-bg: rgba(26, 12, 6, 0.95);
-  --search-border: rgba(229, 193, 88, 0.3);
-  --input-bg: #110703;
-  --input-border: rgba(229, 193, 88, 0.35);
+  --hero-gradient: linear-gradient(to bottom, #1a1a1f, #131316, #0c0c0e);
+  --nav-bg: rgba(20, 20, 23, 0.92);
+  --nav-border: rgba(214, 210, 224, 0.16);
+  --card-bg: linear-gradient(to bottom, #1a1a1e, #101012);
+  --card-border: rgba(214, 210, 224, 0.16);
+  --card-border-hover: rgba(232, 163, 61, 0.6);
+  --card-shadow-hover: 0 8px 30px rgba(240,217,160,0.16);
+  --card-banner: linear-gradient(to right, #202024, #28282e, #1a1a1e);
+  --card-banner-border: rgba(240, 217, 160, 0.18);
+  --search-bg: rgba(26, 26, 30, 0.95);
+  --search-border: rgba(240, 217, 160, 0.25);
+  --input-bg: #141418;
+  --input-border: rgba(240, 217, 160, 0.3);
   --placeholder: #a89078;
-  --pill-active-bg: #e5c158;
-  --pill-active-text: #120603;
-  --pill-active-border: #e5c158;
-  --scrollbar-thumb: #52341d;
-  --scrollbar-hover: #e5c158;
-  --scrollbar-track: #140905;
-  --modal-bg: linear-gradient(to bottom, #241108, #1a0c06, #120603);
-  --modal-border: rgba(229, 193, 88, 0.4);
-  --modal-nav-bg: rgba(22, 10, 4, 0.95);
-  --modal-shadow: 0 10px 60px rgba(229,193,88,0.15);
-  --footer-bg: linear-gradient(to bottom, #140803, #0a0402);
-  --footer-border: rgba(229, 193, 88, 0.25);
-  --accent-text: #f0d9a0;
-  --heading-text: #f0d9a0;
-  --kbach: #e8cf9c;
-  --badge-bg: rgba(42, 19, 9, 0.8);
-  --badge-border: rgba(229, 193, 88, 0.4);
-  --badge-text: #fde68a;
+  --pill-active-bg: #e8a33d;
+  --pill-active-text: #100e17;
+  --pill-active-border: #e8a33d;
+  --scrollbar-thumb: #34343c;
+  --scrollbar-hover: #e8a33d;
+  --scrollbar-track: #0c0c0e;
+  --modal-bg: linear-gradient(to bottom, #1d1d22, #161619, #101012);
+  --modal-border: rgba(240, 217, 160, 0.33);
+  --modal-nav-bg: rgba(19, 17, 30, 0.95);
+  --modal-shadow: 0 10px 60px rgba(240,217,160,0.12);
+  --footer-bg: linear-gradient(to bottom, #161619, #0a0a0c);
+  --footer-border: rgba(240, 217, 160, 0.2);
+  --accent-text: #e8a33d;
+  --heading-text: #dfbe62;
+  --kbach: #93a7be;
+  --badge-bg: rgba(34, 34, 39, 0.85);
+  --badge-border: rgba(240, 217, 160, 0.35);
+  --badge-text: #fed7aa;
   --ambient: radial-gradient(ellipse 90% 70% at 18% -20%, rgba(223, 190, 98, 0.15), rgba(223, 190, 98, 0.05) 45%, transparent 100%),
     radial-gradient(ellipse 90% 70% at 82% -20%, rgba(147, 167, 190, 0.13), rgba(147, 167, 190, 0.04) 45%, transparent 100%),
     radial-gradient(ellipse 110% 65% at 50% -5%, rgba(224, 135, 18, 0.12), rgba(224, 135, 18, 0.03) 50%, transparent 100%);
@@ -237,18 +240,18 @@
 [data-mode="light"][data-theme="all"] {
   /* Composite of all three realms, as in dark mode: antique gold primary with
      a cool slate secondary and a faintly violet parchment. */
-  --accent: #b8860b;
-  --accent-2: #3a506b;
-  --accent-glow: rgba(184, 134, 11, 0.14);
-  --surface: #faf6ee;
-  --ink: #2a170d;
-  --ink-muted: #6b5545;
-  --card-subtitle: #9a6a12;
-  --tab-inactive: #7c6655;
-  --hero-gradient: linear-gradient(to bottom, #f5ecdd, #faf5ec, #ece1cc);
+  --accent: #96581a;
+  --accent-2: #6b4a7a;
+  --accent-glow: rgba(150, 88, 26, 0.13);
+  --surface: #f8f8f7;
+  --ink: #211f26;
+  --ink-muted: #5f5b66;
+  --card-subtitle: #6b4a7a;
+  --tab-inactive: #6d6875;
+  --hero-gradient: linear-gradient(to bottom, #f2f2f1, #f8f8f7, #e9e9e8);
   --nav-bg: rgba(250, 246, 238, 0.92);
   --nav-border: rgba(201, 154, 44, 0.35);
-  --card-bg: linear-gradient(to bottom, #ffffff, #faf4e9);
+  --card-bg: linear-gradient(to bottom, #ffffff, #f3f3f2);
   --card-border: rgba(201, 154, 44, 0.3);
   --card-border-hover: #b8860b;
   --card-shadow-hover: 0 8px 30px rgba(184,134,11,0.12);
@@ -259,11 +262,11 @@
   --input-bg: #fbf7f0;
   --input-border: rgba(201, 154, 44, 0.4);
   --placeholder: #8c7456;
-  --pill-active-bg: #b8860b;
+  --pill-active-bg: #96581a;
   --pill-active-text: #ffffff;
-  --pill-active-border: #b8860b;
+  --pill-active-border: #96581a;
   --scrollbar-thumb: #d4ba88;
-  --scrollbar-hover: #b8860b;
+  --scrollbar-hover: #96581a;
   --scrollbar-track: #fbf7ee;
   --modal-bg: linear-gradient(to bottom, #ffffff, #faf6ee, #f3ecdd);
   --modal-border: rgba(201, 154, 44, 0.45);
@@ -271,9 +274,9 @@
   --modal-shadow: 0 10px 60px rgba(184,134,11,0.12);
   --footer-bg: linear-gradient(to bottom, #f5eee0, #eae0cd);
   --footer-border: rgba(201, 154, 44, 0.3);
-  --accent-text: #9a6a12;
-  --heading-text: #78350f;
-  --kbach: #b8860b;
+  --accent-text: #96581a;
+  --heading-text: #8a4a2a;
+  --kbach: #7a5a85;
   --badge-bg: #f7edd8;
   --badge-border: rgba(201, 154, 44, 0.4);
   --badge-text: #78350f;
@@ -1322,129 +1325,101 @@ textarea::placeholder {
 
 .entries-header {
   display: flex;
-  align-items: flex-start;
+  flex-wrap: wrap;
+  align-items: flex-end;
   justify-content: space-between;
-  gap: 24px;
-  margin-bottom: 32px;
-  padding-bottom: 20px;
-  border-bottom: 2px solid var(--temple-gold);
+  gap: 16px;
+  margin-bottom: 20px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--card-border);
+}
+
+.entries-heading {
+  min-width: 0;
+}
+
+.entries-heading-top {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.entries-motif {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  color: var(--accent);
+  transition: color 0.7s ease;
 }
 
 .entries-title {
-  font-family: var(--font-serif-title);
-  font-size: 28px;
-  font-weight: 700;
-  color: var(--krama-red-dark);
   margin: 0;
-  letter-spacing: 0.5px;
-  line-height: 1.3;
-}
-
-.entries-title-sub {
   font-family: var(--font-sans-khmer);
-  font-size: 16px;
-  color: var(--sandstone-muted);
-  font-weight: 400;
-  margin: 4px 0 0 0;
-}
-
-.entries-count {
-  font-family: var(--font-sans-khmer);
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--temple-gold-dark);
-  background: linear-gradient(135deg, rgba(197, 155, 39, 0.12) 0%, rgba(197, 155, 39, 0.06) 100%);
-  padding: 12px 18px;
-  border-radius: 6px;
-  border: 1px solid rgba(197, 155, 39, 0.3);
-  text-align: center;
-  min-width: 130px;
-  white-space: nowrap;
-}
-
-.entries-count-number {
-  display: block;
-  font-size: 26px;
+  font-size: clamp(19px, 2.6vw, 26px);
   font-weight: 700;
-  color: var(--krama-red);
-  line-height: 1;
-  margin-bottom: 3px;
+  line-height: 1.5;
+  color: var(--heading-text);
+  transition: color 0.7s ease;
 }
 
-.entries-count-label {
-  display: block;
-  font-size: 11px;
-  font-weight: 500;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  color: var(--sandstone-muted);
+.entries-subtitle {
+  margin: 4px 0 0;
+  font-family: var(--font-serif-title);
+  font-size: 13px;
+  letter-spacing: 0.02em;
+  color: var(--ink-muted);
 }
 
-/* Search Box */
-.search-box {
-  position: relative;
-  margin-top: 20px;
-  padding-top: 20px;
-  border-top: 1px dashed var(--parchment-border);
+.entries-subtitle-count {
+  opacity: 0.75;
 }
 
-.search-input {
-  width: 100%;
-  box-sizing: border-box;
-  padding: 14px 16px 14px 48px;
-  font-family: var(--font-sans-khmer);
-  font-size: 15px;
-  color: var(--sandstone-dark);
-  background-color: var(--parchment-card);
-  border: 2px solid var(--parchment-border);
-  border-radius: 8px;
-  transition: border-color 0.25s, box-shadow 0.25s;
+/* Navigation out to the full collection: the home grid is only a sample. */
+.entries-browse-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+  padding: 10px 20px;
+  border-radius: 999px;
+  /* Filled with the theme accent, matching the hero CTA: this is the primary
+     way out of the sampled grid, so it should read as an action. */
+  border: 1px solid var(--pill-active-border);
+  background-color: var(--pill-active-bg);
+  color: var(--pill-active-text);
+  font-family: var(--font-serif-title);
+  font-size: 13px;
+  font-weight: 700;
+  text-decoration: none;
+  white-space: nowrap;
+  box-shadow: 0 4px 14px var(--accent-glow);
+  transition: transform 0.3s ease, box-shadow 0.3s ease,
+    background-color 0.7s ease, border-color 0.7s ease, color 0.7s ease;
 }
 
-.search-input::placeholder {
-  color: var(--sandstone-muted);
-  font-style: italic;
+.entries-browse-link:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 22px var(--accent-glow);
 }
 
-.search-input:hover {
-  border-color: var(--krama-red-light);
+.entries-browse-arrow {
+  transition: transform 0.3s ease;
 }
 
-.search-input:focus {
-  outline: none;
-  border-color: var(--temple-gold);
-  box-shadow: 0 0 0 4px rgba(197, 155, 39, 0.12);
+.entries-browse-link:hover .entries-browse-arrow {
+  transform: translateX(4px);
 }
 
-.search-icon {
-  position: absolute;
-  left: 16px;
-  top: calc(50% + 10px);
-  transform: translateY(-50%);
-  color: var(--sandstone-muted);
-  pointer-events: none;
-  font-size: 16px;
-}
+@media (prefers-reduced-motion: reduce) {
+  .entries-browse-link,
+  .entries-browse-arrow {
+    transition: none;
+  }
 
-.search-clear {
-  position: absolute;
-  right: 12px;
-  top: calc(50% + 10px);
-  transform: translateY(-50%);
-  padding: 4px 10px;
-  font-size: 11px;
-  color: var(--sandstone-muted);
-  background: transparent;
-  border: 1px solid var(--parchment-border);
-  border-radius: 4px;
-  cursor: pointer;
-  transition: all 0.2s;
-  font-family: var(--font-sans-khmer);
-}
-
-.search-clear:hover {
-  background: var(--parchment-border);
-  color: var(--sandstone-dark);
+  .entries-browse-link:hover,
+  .entries-browse-link:hover .entries-browse-arrow {
+    transform: none;
+  }
 }
 
 .entries-list {
@@ -1456,42 +1431,32 @@ textarea::placeholder {
 /* Empty state */
 .empty-state {
   grid-column: 1 / -1;
+  padding: 48px 16px;
+  border-radius: 16px;
+  border: 1px dashed var(--card-border);
+  background-color: var(--input-bg);
   text-align: center;
-  padding: 60px 24px;
-  background-color: var(--parchment-card);
-  border: 1px dashed var(--parchment-border);
-  border-radius: 8px;
-}
-
-.empty-state-icon {
-  font-size: 36px;
-  color: var(--temple-gold);
-  margin-bottom: 16px;
-  opacity: 0.7;
 }
 
 .empty-state-title {
+  margin: 0 0 4px;
   font-family: var(--font-serif-title);
-  font-size: 20px;
-  font-weight: 600;
-  color: var(--sandstone-dark);
-  margin: 0 0 6px 0;
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--ink);
 }
 
-.empty-state-title-khmer {
-  display: block;
+.empty-state-title-km {
+  margin: 0 0 10px;
   font-family: var(--font-sans-khmer);
-  font-size: 14px;
-  color: var(--sandstone-muted);
-  font-weight: 400;
-  margin-top: 4px;
+  font-size: 15px;
+  color: var(--heading-text);
 }
 
 .empty-state-hint {
+  margin: 0;
   font-size: 13px;
-  color: var(--sandstone-muted);
-  font-style: italic;
-  margin: 12px 0 0 0;
+  color: var(--ink-muted);
 }
 
 /* Individual entry sheet, matching the archival paper treatment */
@@ -1867,10 +1832,11 @@ textarea::placeholder {
 
 .hero-title-sub {
   display: block;
-  font-family: var(--font-serif-title);
+  font-family: var(--font-serif-body);
   margin-top: 6px;
   /* xl -> 2xl -> 3xl in the reference. */
-  font-size: clamp(20px, 3.2vw, 30px);
+  /* A step below the title so the hierarchy holds without a font change. */
+  font-size: clamp(17px, 2.7vw, 25px);
   font-weight: 400;
   font-style: italic;
   letter-spacing: 0;
@@ -2004,6 +1970,33 @@ textarea::placeholder {
   .hero-cta-primary:hover {
     transform: none;
   }
+}
+
+/* --------------------------------------------------------------------------
+   Default theme only: spread the three realms across distinct elements so the
+   "All Traditions" view shows every palette at once rather than a blend.
+   Each category keeps its own accent everywhere else.
+   -------------------------------------------------------------------------- */
+
+[data-theme="all"] .hero-title-sub {
+  color: var(--accent-2);
+}
+
+[data-theme="all"] .hero-stat strong {
+  color: var(--heading-text);
+}
+
+[data-theme="all"] .entries-motif,
+[data-theme="all"] .hero-motif {
+  color: var(--kbach);
+}
+
+[data-theme="all"] .entries-title {
+  color: var(--heading-text);
+}
+
+[data-theme="all"] .site-nav-mark {
+  color: var(--accent-2);
 }
 
 /* ==========================================================================

@@ -9,6 +9,7 @@ import HeroSection from "../components/HeroSection";
 import EntryDetailModal from "../components/EntryDetailModal";
 import ThemeAtmosphereBackdrop from "../components/ThemeAtmosphereBackdrop";
 import themes from "../data/themes.js";
+import { ThemeVibeIcon } from "../components/KbachMotifs";
 
 const NAV_LINKS = [
   { href: "#archive-entries", label: "Browse Archive" },
@@ -18,8 +19,16 @@ const NAV_LINKS = [
 // Counted from the entries themselves so the hero stat cannot drift.
 const CATEGORY_COUNT = new Set(entries.map((entry) => entry.category)).size;
 
+// The home grid is a sample; the full collection lives on the browse page.
+const HOME_SAMPLE_SIZE = 6;
+
+// How many entries sit in each category, for the filter pills.
+const categoryCounts = entries.reduce(
+  (acc, entry) => ({ ...acc, [entry.category]: (acc[entry.category] || 0) + 1 }),
+  { all: entries.length, etiquette: 0, beliefs: 0, taboos: 0 }
+);
+
 export default function Home() {
-  const [searchTerm, setSearchTerm] = useState('');
   const [selectedTheme, setSelectedTheme] = useState('all');
   const [openEntry, setOpenEntry] = useState(null);
   const [isDark, setIsDark] = useState(true);
@@ -39,16 +48,8 @@ export default function Home() {
       ? entries
       : entries.filter((entry) => entry.category === selectedTheme);
 
-  // Filter entries based on search term: match any field containing the term
-  const filteredEntries = themedEntries.filter((entry) => {
-    const lowerSearchTerm = searchTerm.trim().toLowerCase();
-    if (!lowerSearchTerm) return true;
-    return Object.values(entry).some(
-      (value) =>
-        value != null &&
-        value.toString().toLowerCase().includes(lowerSearchTerm)
-    );
-  });
+  // The home page is a window onto the archive, not the archive itself.
+  const shownEntries = themedEntries.slice(0, HOME_SAMPLE_SIZE);
 
   const scrollToArchive = () => {
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -78,6 +79,7 @@ export default function Home() {
 
     if (history.replaceState) history.replaceState(null, "", id);
   };
+
 
   return (
     <div>
@@ -109,51 +111,43 @@ export default function Home() {
 
         <section className="entries-section" id="archive-entries">
           <div className="entries-header">
-            <h2 className="entries-title">{themes[selectedTheme].nameEn}</h2>
-            <span className="entries-count" style={{ fontSize: '1.5rem', fontWeight: 'bold', display: 'block', margin: '1rem 0' }}>
-              {filteredEntries.length} recorded{" "}
-              {filteredEntries.length === 1 ? "entry" : "entries"}
-              {searchTerm &&
-                filteredEntries.length !== themedEntries.length &&
-                ` (filtered from ${themedEntries.length})`}
-            </span>
-          </div>
+            <div className="entries-heading">
+              <div className="entries-heading-top">
+                <span className="entries-motif" aria-hidden="true">
+                  <ThemeVibeIcon motif={themes[selectedTheme].motifType} size={20} />
+                </span>
+                <h2 className="entries-title" lang="km">
+                  {themes[selectedTheme].nameKm}
+                </h2>
+              </div>
+              <p className="entries-subtitle">
+                {themes[selectedTheme].nameEn}
+                <span className="entries-subtitle-count">
+                  {" "}· showing {shownEntries.length} of {themedEntries.length}
+                </span>
+              </p>
+            </div>
 
-          <div className="search-container" style={{ marginBottom: '1.5rem' }}>
-            <input
-              type="text"
-              placeholder="Search entries... / ស្វែងរកតារាងការ... / អត្ថបទ ចំណងជើង ទីតាំង អ្នកចូលរួម..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="search-input"
-              style={{
-                width: '100%',
-                padding: '0.75rem 1rem',
-                fontSize: '1rem',
-                border: '1px solid #ccc',
-                borderRadius: '0.5rem',
-                outline: 'none',
-                transition: 'border-color 0.2s',
-              }}
-            />
+            {/* The home page shows a sample; the full collection lives on the
+                Browse Archive page. */}
+            <a href="#archive-entries" className="entries-browse-link">
+              <span>Browse the archive</span>
+              <span className="entries-browse-arrow" aria-hidden="true">→</span>
+            </a>
           </div>
 
           <div className="entries-grid">
-            {filteredEntries.length > 0 ? (
-              filteredEntries.map((entry) => (
+            {shownEntries.length > 0 ? (
+              shownEntries.map((entry) => (
                 <EntryCard key={entry.id} entry={entry} onSelect={setOpenEntry} />
               ))
             ) : (
-              <div className="empty-state" style={{
-                textAlign: 'center',
-                padding: '3rem 1rem',
-                color: '#666',
-                fontStyle: 'italic',
-              }}>
-                <p style={{ fontSize: '1.1rem', marginBottom: '0.5rem' }}>
-                  No entries found / រកមិនឃើញកំណត់ត្រា
+              <div className="empty-state">
+                <p className="empty-state-title">No entries found</p>
+                <p className="empty-state-title-km" lang="km">
+                  រកមិនឃើញកំណត់ត្រា
                 </p>
-                <p style={{ fontSize: '0.9rem' }}>
+                <p className="empty-state-hint">
                   Try a different search term / សូមសាកល្បងពាក្យស្វែងរកផ្សេង
                 </p>
               </div>
