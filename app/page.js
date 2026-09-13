@@ -1,6 +1,5 @@
 'use client';
 
-import { useState } from "react";
 import Link from "next/link";
 import collection from "../collection.config.js";
 import entries from "../data/entries.js";
@@ -12,6 +11,7 @@ import ThemeAtmosphereBackdrop from "../components/ThemeAtmosphereBackdrop";
 import themes from "../data/themes.js";
 import { ThemeVibeIcon } from "../components/KbachMotifs";
 import { useTheme } from "../components/ThemeProvider";
+import useEntryRoute from "../components/useEntryRoute";
 
 // Counted from the entries themselves so the hero stat cannot drift.
 const CATEGORY_COUNT = new Set(entries.map((entry) => entry.category)).size;
@@ -27,7 +27,7 @@ const categoryCounts = entries.reduce(
 
 export default function Home() {
   const { selectedTheme, setSelectedTheme, isDark, toggleMode } = useTheme();
-  const [openEntry, setOpenEntry] = useState(null);
+  const { openEntry, setOpenEntry, buildHref } = useEntryRoute();
 
   // The theme doubles as a category filter: picking a theme narrows the
   // archive to that category, and "all" leaves it whole.
@@ -104,8 +104,14 @@ export default function Home() {
             </div>
 
             {/* The home page shows a sample; the full collection lives on the
-                Browse Archive page. */}
-            <Link href="/browse" className="entries-browse-link">
+                Browse Archive page. The theme rides along, so this reads as
+                "see the rest of these" rather than a reset. */}
+            <Link
+              href={
+                selectedTheme === "all" ? "/browse" : `/browse?theme=${selectedTheme}`
+              }
+              className="entries-browse-link"
+            >
               <span>Browse the archive</span>
               <span className="entries-browse-arrow" aria-hidden="true">→</span>
             </Link>
@@ -176,7 +182,11 @@ export default function Home() {
       </footer>
       </div>
 
-      <EntryDetailModal entry={openEntry} onClose={() => setOpenEntry(null)} />
+      <EntryDetailModal
+        entry={openEntry}
+        onClose={() => setOpenEntry(null)}
+        shareHref={openEntry ? buildHref(openEntry.id) : null}
+      />
     </div>
   );
 }

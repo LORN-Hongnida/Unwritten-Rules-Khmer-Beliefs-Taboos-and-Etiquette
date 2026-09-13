@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import collection from "../collection.config.js";
 import "./globals.css";
 import ThemeProvider from "../components/ThemeProvider";
@@ -23,7 +24,11 @@ export default function RootLayout({ children }) {
         />
       </head>
       <body>
-        <ThemeProvider>{children}</ThemeProvider>
+        {/* ThemeProvider reads the query string, which is only known at request
+            time; Suspense lets the rest of the shell prerender regardless. */}
+        <Suspense>
+          <ThemeProvider>{children}</ThemeProvider>
+        </Suspense>
       </body>
     </html>
   );

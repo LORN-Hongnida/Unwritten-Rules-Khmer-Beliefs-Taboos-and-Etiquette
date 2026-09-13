@@ -42,6 +42,13 @@ const NAV_LINKS = [
   { href: "/browse", label: "Browse Archive" },
 ];
 
+// Moving between pages keeps the chosen theme: picking "Taboos" and then
+// navigating is a continuation of that browse, not a new one. "all" is the
+// default, so it is left off to keep the URL clean.
+function withTheme(href, theme) {
+  return theme === "all" ? href : `${href}?theme=${theme}`;
+}
+
 // Scrolls to an element, honouring a reader's reduced-motion preference.
 function scrollToTarget(target) {
   const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -90,7 +97,11 @@ export default function SiteNav({
   return (
     <nav className="site-nav" aria-label="Primary">
       <div className="site-nav-inner">
-        <Link href="/" className="site-nav-brand" onClick={handleBrandClick}>
+        <Link
+          href={withTheme("/", selectedTheme)}
+          className="site-nav-brand"
+          onClick={handleBrandClick}
+        >
           <span className="site-nav-mark" aria-hidden="true">
             <ThemeVibeIcon motif={motif} size={20} />
           </span>
@@ -169,7 +180,9 @@ export default function SiteNav({
             ) : (
               <Link
                 key={link.href}
-                href={link.href}
+                href={withTheme(link.href, selectedTheme)}
+                // Matched on the bare path: the theme param is carried along
+                // but has no say in which page is the current one.
                 className={`site-nav-link ${pathname === link.href ? "is-active" : ""}`}
                 aria-current={pathname === link.href ? "page" : undefined}
                 onClick={() => setIsMenuOpen(false)}

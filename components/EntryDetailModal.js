@@ -73,14 +73,26 @@ function PersonIcon() {
   );
 }
 
-export default function EntryDetailModal({ entry, onClose }) {
+export default function EntryDetailModal({ entry, onClose, shareHref }) {
   const [copied, setCopied] = useState(false);
   const panelRef = useRef(null);
   const previouslyFocused = useRef(null);
 
-  // Escape to close, Tab kept inside the dialog, and the page behind it frozen.
+  // onClose is now a router call, so its identity changes every render. Holding
+  // it in a ref keeps the effect below from tearing down the focus trap and
+  // stealing focus back mid-read.
+  const onCloseRef = useRef(onClose);
   useEffect(() => {
-    if (!entry) return;
+    onCloseRef.current = onClose;
+  });
+
+  // Escape to close, Tab kept inside the dialog, and the page behind it frozen.
+  // Keyed to the entry's id rather than the object so a re-render that produces
+  // an equal-but-new entry does not reset focus.
+  const entryId = entry?.id ?? null;
+
+  useEffect(() => {
+    if (!entryId) return;
 
     previouslyFocused.current = document.activeElement;
     const { overflow } = document.body.style;
@@ -88,7 +100,7 @@ export default function EntryDetailModal({ entry, onClose }) {
 
     const handleKeyDown = (e) => {
       if (e.key === "Escape") {
-        onClose();
+        onCloseRef.current();
         return;
       }
       if (e.key !== "Tab" || !panelRef.current) return;
@@ -118,7 +130,7 @@ export default function EntryDetailModal({ entry, onClose }) {
       document.body.style.overflow = overflow;
       previouslyFocused.current?.focus?.();
     };
-  }, [entry, onClose]);
+  }, [entryId]);
 
   if (!entry) return null;
 
@@ -126,9 +138,16 @@ export default function EntryDetailModal({ entry, onClose }) {
   const motif = meta.motif;
 
   const handleCopy = async () => {
+    // A citation nobody can follow is not much of a share, so the entry's own
+    // URL goes in alongside the text.
+    const url = shareHref ? new URL(shareHref, window.location.origin).href : null;
+
     const text = `"${entry.titleKm} (${entry.title})"\nTraditional belief: ${entry.description}${
       entry.reason ? `\nWhy it exists: ${entry.reason}` : ""
-    }\n— Unwritten Rules: Khmer Beliefs, Taboos and Etiquette`;
+    }\n— Unwritten Rules: Khmer Beliefs, Taboos and Etiquette${
+      url ? `\n${url}` : ""
+    }`;
+
     try {
       await navigator.clipboard.writeText(text);
     } catch {

@@ -1,7 +1,8 @@
 'use client';
 
-import { useState } from "react";
+import { useCallback } from "react";
 import Link from "next/link";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import entries from "../../data/entries.js";
 import themes from "../../data/themes.js";
 import EntryCard from "../../components/EntryCard";
@@ -11,6 +12,7 @@ import SiteNav from "../../components/SiteNav";
 import ThemeAtmosphereBackdrop from "../../components/ThemeAtmosphereBackdrop";
 import { ThemeVibeIcon } from "../../components/KbachMotifs";
 import { useTheme } from "../../components/ThemeProvider";
+import useEntryRoute from "../../components/useEntryRoute";
 
 // How many entries sit in each category, for the filter pills.
 const categoryCounts = entries.reduce(
@@ -20,8 +22,31 @@ const categoryCounts = entries.reduce(
 
 export default function BrowsePage() {
   const { selectedTheme, setSelectedTheme, isDark, toggleMode } = useTheme();
-  const [searchTerm, setSearchTerm] = useState("");
-  const [openEntry, setOpenEntry] = useState(null);
+  const { openEntry, setOpenEntry, buildHref } = useEntryRoute();
+
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+
+  // The search term rides in the URL so a filtered view can be linked to and
+  // survives a trip to an entry and back.
+  const searchTerm = searchParams.get("q") ?? "";
+
+  const setSearchTerm = useCallback(
+    (term) => {
+      const params = new URLSearchParams(searchParams);
+      if (term) params.set("q", term);
+      else params.delete("q");
+
+      // A new search invalidates whichever entry was open.
+      params.delete("entry");
+
+      const query = params.toString();
+      // replace, not push: typing would otherwise bury the page in history.
+      router.replace(query ? `${pathname}?${query}` : pathname, { scroll: false });
+    },
+    [pathname, router, searchParams]
+  );
 
   const themedEntries =
     selectedTheme === "all"
@@ -52,7 +77,11 @@ export default function BrowsePage() {
         <main className="browse-page">
           <div className="browse-header">
             <div>
-              <Link href="/" className="browse-back">
+              {/* Carries the theme home, so going back does not reset the view. */}
+              <Link
+                href={selectedTheme === "all" ? "/" : `/?theme=${selectedTheme}`}
+                className="browse-back"
+              >
                 <span aria-hidden="true">←</span>
                 <span lang="km">ត្រឡប់ទៅទំព័រដើម</span>
                 <span>(Back to Home)</span>
@@ -113,7 +142,11 @@ export default function BrowsePage() {
         </main>
       </div>
 
-      <EntryDetailModal entry={openEntry} onClose={() => setOpenEntry(null)} />
+      <EntryDetailModal
+        entry={openEntry}
+        onClose={() => setOpenEntry(null)}
+        shareHref={openEntry ? buildHref(openEntry.id) : null}
+      />
     </div>
   );
 }
