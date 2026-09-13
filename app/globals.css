@@ -2024,6 +2024,38 @@ textarea::placeholder {
   transition: background-image 0.7s ease, border-color 0.7s ease;
 }
 
+/* Ornamental frieze across the top edge, and Kbach corners. */
+.hero-frieze {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  pointer-events: none;
+  opacity: 0.4;
+}
+
+.hero-corner {
+  position: absolute;
+  top: 12px;
+  pointer-events: none;
+  opacity: 0.6;
+  color: var(--kbach);
+}
+
+.hero-corner-left {
+  left: 12px;
+}
+
+.hero-corner-right {
+  right: 12px;
+}
+
+@media (max-width: 560px) {
+  .hero-corner {
+    display: none;
+  }
+}
+
 .hero-inner {
   position: relative;
   max-width: 880px;
@@ -2060,6 +2092,7 @@ textarea::placeholder {
   width: 28px;
   height: 28px;
   color: var(--accent);
+  transition: color 0.5s ease;
 }
 
 .hero-motif svg {
@@ -2210,6 +2243,194 @@ textarea::placeholder {
   }
 
   .hero-cta-primary:hover {
+    transform: none;
+  }
+}
+
+/* ==========================================================================
+   Kbach motifs — support classes for components/KbachMotifs.js
+   The SVG carries its own geometry; these only handle colour, layout,
+   and the corner rotations the reference did with Tailwind utilities.
+   ========================================================================== */
+
+.kbach {
+  color: var(--kbach);
+}
+
+.kbach-corner {
+  display: inline-block;
+  user-select: none;
+  transition: transform 0.3s ease;
+}
+
+.kbach-rot-0 { transform: rotate(0deg); }
+.kbach-rot-90 { transform: rotate(90deg); }
+.kbach-rot-180 { transform: rotate(180deg); }
+.kbach-rot-270 { transform: rotate(-90deg); }
+
+.kbach-frieze {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  overflow: hidden;
+  user-select: none;
+  pointer-events: none;
+  color: var(--kbach);
+}
+
+.kbach-frieze-svg {
+  width: 100%;
+  opacity: 0.7;
+}
+
+.kbach-icon,
+.kbach-micro-svg {
+  display: inline-block;
+  flex-shrink: 0;
+  user-select: none;
+}
+
+/* --- Card crest ---------------------------------------------------------- */
+
+.kbach-crest {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  user-select: none;
+  pointer-events: none;
+  color: var(--kbach);
+}
+
+.kbach-crest-icon {
+  opacity: 0.9;
+}
+
+.kbach-rule {
+  height: 1px;
+  width: 32px;
+  opacity: 0.6;
+}
+
+.kbach-rule-left {
+  background-image: linear-gradient(to right, transparent, currentColor);
+}
+
+.kbach-rule-right {
+  background-image: linear-gradient(to left, transparent, currentColor);
+}
+
+@media (min-width: 640px) {
+  .kbach-rule {
+    width: 48px;
+  }
+}
+
+/* --- Section divider ----------------------------------------------------- */
+
+.kbach-divider {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  width: 100%;
+  margin: 24px 0;
+  color: var(--kbach);
+}
+
+.kbach-divider-rule {
+  height: 1px;
+  flex: 1;
+}
+
+.kbach-divider-rule-left {
+  background-image: linear-gradient(
+    to right,
+    transparent,
+    color-mix(in srgb, var(--kbach) 35%, transparent),
+    color-mix(in srgb, var(--kbach) 60%, transparent)
+  );
+}
+
+.kbach-divider-rule-right {
+  background-image: linear-gradient(
+    to left,
+    transparent,
+    color-mix(in srgb, var(--kbach) 35%, transparent),
+    color-mix(in srgb, var(--kbach) 60%, transparent)
+  );
+}
+
+.kbach-divider-pill {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 12px;
+  border: 1px solid var(--card-border);
+  border-radius: 999px;
+  background-color: var(--badge-bg);
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.4);
+}
+
+.kbach-divider-label {
+  font-family: var(--font-serif-title);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.kbach-divider-label-km {
+  font-family: var(--font-sans-khmer);
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--badge-text);
+}
+
+/* --- Gold brackets around CTA labels ------------------------------------- */
+
+.kbach-bracket-wrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.kbach-bracket-mark {
+  font-family: var(--font-serif-title);
+  font-size: 16px;
+  font-weight: 300;
+  letter-spacing: -0.05em;
+  user-select: none;
+}
+
+.kbach-bracket {
+  color: var(--accent);
+  opacity: 0.7;
+  transition: opacity 0.3s ease;
+}
+
+button:hover .kbach-bracket {
+  opacity: 1;
+}
+
+.kbach-micro {
+  color: var(--accent-2);
+  transition: transform 0.3s ease;
+}
+
+button:hover .kbach-micro {
+  transform: scale(1.1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kbach-corner,
+  .kbach-bracket,
+  .kbach-micro {
+    transition: none;
+  }
+
+  button:hover .kbach-micro {
     transform: none;
   }
 }

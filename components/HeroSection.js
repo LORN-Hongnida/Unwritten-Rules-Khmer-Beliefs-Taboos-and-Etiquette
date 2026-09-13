@@ -1,28 +1,41 @@
 'use client';
 
-// Small lotus motif, mirrored on the right of the Khmer title.
-function LotusMotif() {
-  return (
-    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-      <path
-        fill="currentColor"
-        d="M12 2.5c1.9 2.2 2.9 4.3 2.9 6.2c0 1.6-.8 3-2.2 4.2v7.6h-1.4v-7.6C9.9 11.7 9.1 10.3 9.1 8.7c0-1.9 1-4 2.9-6.2m0 2.6c-.9 1.3-1.4 2.5-1.4 3.6c0 .9.4 1.7 1.4 2.5c1-.8 1.4-1.6 1.4-2.5c0-1.1-.5-2.3-1.4-3.6M5.5 9.4c1.6.5 2.8 1.3 3.5 2.3c.6.9.8 1.9.6 3c-1.1.2-2.1 0-3-.6c-1-.7-1.8-1.9-2.3-3.5zm13 0l1.2 1.2c-.5 1.6-1.3 2.8-2.3 3.5c-.9.6-1.9.8-3 .6c-.2-1.1 0-2.1.6-3c.7-1 1.9-1.8 3.5-2.3"
-      />
-    </svg>
-  );
-}
+import {
+  KbachCorner,
+  KhmerFriezeBorder,
+  ThemeVibeIcon,
+  GoldBracket,
+  MicroIlluminatedIcon,
+} from "./KbachMotifs";
 
-export default function HeroSection({ collection, entryCount, categoryCount, onBrowse }) {
+export default function HeroSection({
+  collection,
+  entryCount,
+  categoryCount,
+  onBrowse,
+  motif = "lotus",
+}) {
   return (
     <header className="hero">
+      <div className="hero-frieze" aria-hidden="true">
+        <KhmerFriezeBorder motif={motif} height={10} />
+      </div>
+
+      <div className="hero-corner hero-corner-left" aria-hidden="true">
+        <KbachCorner position="top-left" size={44} motif={motif} />
+      </div>
+      <div className="hero-corner hero-corner-right" aria-hidden="true">
+        <KbachCorner position="top-right" size={44} motif={motif} />
+      </div>
+
       <div className="hero-inner">
         <div className="hero-khmer-title">
           <span className="hero-motif" aria-hidden="true">
-            <LotusMotif />
+            <ThemeVibeIcon motif={motif} size={28} />
           </span>
           <h2 lang="km">បណ្ណសារទំនៀមទម្លាប់ខ្មែរ</h2>
           <span className="hero-motif hero-motif-flipped" aria-hidden="true">
-            <LotusMotif />
+            <ThemeVibeIcon motif={motif} size={28} />
           </span>
         </div>
 
@@ -39,7 +52,10 @@ export default function HeroSection({ collection, entryCount, categoryCount, onB
 
         <div className="hero-actions">
           <button type="button" className="hero-cta hero-cta-primary" onClick={onBrowse}>
-            <span>Browse Archive ({entryCount})</span>
+            <MicroIlluminatedIcon motif={motif} />
+            <GoldBracket>
+              <span>Browse Archive ({entryCount})</span>
+            </GoldBracket>
             <span className="hero-cta-arrow" aria-hidden="true">→</span>
           </button>
         </div>
