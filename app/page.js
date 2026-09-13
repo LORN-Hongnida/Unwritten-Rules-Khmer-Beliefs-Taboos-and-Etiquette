@@ -1,11 +1,13 @@
 'use client';
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import collection from "../collection.config.js";
 import entries from "../data/entries.js";
 import EntryCard from "../components/EntryCard";
 import SiteNav from "../components/SiteNav";
 import HeroSection from "../components/HeroSection";
+import ThemeAtmosphereBackdrop from "../components/ThemeAtmosphereBackdrop";
+import themes from "../data/themes.js";
 
 const NAV_LINKS = [
   { href: "#archive-entries", label: "Browse Archive" },
@@ -17,9 +19,26 @@ const CATEGORY_COUNT = new Set(entries.map((entry) => entry.category)).size;
 
 export default function Home() {
   const [searchTerm, setSearchTerm] = useState('');
+  const [selectedTheme, setSelectedTheme] = useState('all');
+  const [isDark, setIsDark] = useState(true);
+
+  // The theme tables in globals.css key off these two attributes, so setting
+  // them here retints every surface at once.
+  useEffect(() => {
+    const root = document.documentElement;
+    root.setAttribute('data-theme', selectedTheme);
+    root.setAttribute('data-mode', isDark ? 'dark' : 'light');
+  }, [selectedTheme, isDark]);
+
+  // The theme doubles as a category filter: picking a theme narrows the
+  // archive to that category, and "all" leaves it whole.
+  const themedEntries =
+    selectedTheme === 'all'
+      ? entries
+      : entries.filter((entry) => entry.category === selectedTheme);
 
   // Filter entries based on search term: match any field containing the term
-  const filteredEntries = entries.filter((entry) => {
+  const filteredEntries = themedEntries.filter((entry) => {
     const lowerSearchTerm = searchTerm.trim().toLowerCase();
     if (!lowerSearchTerm) return true;
     return Object.values(entry).some(
@@ -60,13 +79,23 @@ export default function Home() {
 
   return (
     <div>
-      <SiteNav links={NAV_LINKS} />
+      <ThemeAtmosphereBackdrop selectedTheme={selectedTheme} />
+
+      <div className="page-content">
+      <SiteNav
+        links={NAV_LINKS}
+        selectedTheme={selectedTheme}
+        onSelectTheme={setSelectedTheme}
+        isDark={isDark}
+        onToggleMode={() => setIsDark((dark) => !dark)}
+      />
 
       <HeroSection
-        collection={collection}
-        entryCount={entries.length}
+        entryCount={themedEntries.length}
         categoryCount={CATEGORY_COUNT}
+        curator={collection.curator}
         onBrowse={scrollToArchive}
+        selectedTheme={selectedTheme}
       />
 
       <div className="portal-container">
@@ -78,11 +107,13 @@ export default function Home() {
 
         <section className="entries-section" id="archive-entries">
           <div className="entries-header">
-            <h2 className="entries-title">Archive Entries</h2>
+            <h2 className="entries-title">{themes[selectedTheme].nameEn}</h2>
             <span className="entries-count" style={{ fontSize: '1.5rem', fontWeight: 'bold', display: 'block', margin: '1rem 0' }}>
               {filteredEntries.length} recorded{" "}
-              {filteredEntries.length === 1 ? "belief" : "beliefs"}
-              {searchTerm && filteredEntries.length !== entries.length && ` (filtered from ${entries.length})`}
+              {filteredEntries.length === 1 ? "entry" : "entries"}
+              {searchTerm &&
+                filteredEntries.length !== themedEntries.length &&
+                ` (filtered from ${themedEntries.length})`}
             </span>
           </div>
 
@@ -158,6 +189,7 @@ export default function Home() {
           </div>
         </div>
       </footer>
+      </div>
     </div>
   );
 }

@@ -2,6 +2,37 @@
 
 import { useState } from "react";
 import { ThemeVibeIcon } from "./KbachMotifs";
+import ThemeDropdown from "./ThemeDropdown";
+
+// Inline icons; the reference uses lucide-react, which is not a dependency here.
+function MoonIcon() {
+  return (
+    <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true">
+      <path
+        d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8"
+        fill="currentColor"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+function SunIcon() {
+  return (
+    <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true">
+      <circle cx="12" cy="12" r="4.5" fill="currentColor" />
+      <path
+        d="M12 1.5v3M12 19.5v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M1.5 12h3M19.5 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+import themes from "../data/themes.js";
 
 // Scrolls to an element, honouring a reader's reduced-motion preference.
 function scrollToTarget(target) {
@@ -9,8 +40,17 @@ function scrollToTarget(target) {
   target.scrollIntoView({ behavior: reduced ? "auto" : "smooth" });
 }
 
-export default function SiteNav({ links, motif = "lotus" }) {
+export default function SiteNav({
+  links,
+  selectedTheme = "all",
+  onSelectTheme,
+  isDark = true,
+  onToggleMode,
+}) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isThemeOpen, setIsThemeOpen] = useState(false);
+
+  const motif = themes[selectedTheme].motifType;
 
   const handleNavClick = (e) => {
     setIsMenuOpen(false);
@@ -48,17 +88,60 @@ export default function SiteNav({ links, motif = "lotus" }) {
           </span>
         </a>
 
-        <button
+        <div className="site-nav-actions">
+          <div className="site-nav-theme">
+            <button
+              type="button"
+              className="site-nav-theme-trigger"
+              onClick={() => setIsThemeOpen((open) => !open)}
+              aria-expanded={isThemeOpen}
+              aria-haspopup="true"
+              title="Change theme and category"
+            >
+              <ThemeVibeIcon motif={motif} size={15} />
+              <span className="site-nav-theme-label">
+                {selectedTheme === "all" ? "Theme" : themes[selectedTheme].nameEn.split(" ")[0]}
+              </span>
+              <span className="site-nav-theme-caret" aria-hidden="true">▾</span>
+            </button>
+
+            <ThemeDropdown
+              isOpen={isThemeOpen}
+              onClose={() => setIsThemeOpen(false)}
+              selectedTheme={selectedTheme}
+              onSelectTheme={onSelectTheme}
+            />
+          </div>
+
+          <button
+            type="button"
+            className="site-nav-mode-toggle"
+            onClick={onToggleMode}
+            title={
+              isDark
+                ? "Switch to light mode (ប្តូរទៅពន្លឺថ្ងៃ)"
+                : "Switch to dark mode (ប្តូរទៅរាត្រី)"
+            }
+            aria-label="Toggle light and dark mode"
+          >
+            {isDark ? <MoonIcon /> : <SunIcon />}
+            <span className="site-nav-mode-label">
+              {isDark ? "Dark" : "Light"}
+            </span>
+          </button>
+
+          <button
           type="button"
           className={`site-nav-burger ${isMenuOpen ? "is-open" : ""}`}
           aria-label="Toggle navigation menu"
           aria-expanded={isMenuOpen}
           onClick={() => setIsMenuOpen((open) => !open)}
         >
-          <span />
-          <span />
-          <span />
-        </button>
+            <span />
+            <span />
+            <span />
+          </button>
+        </div>
 
         <div className={`site-nav-links ${isMenuOpen ? "is-open" : ""}`}>
           {links.map((link) => (

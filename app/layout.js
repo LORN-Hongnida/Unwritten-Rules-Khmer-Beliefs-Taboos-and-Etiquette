@@ -17,7 +17,7 @@ export default function RootLayout({ children }) {
           crossOrigin="anonymous"
         />
         <link
-          href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Kantumruy+Pro:ital,wght@0,100..900;1,100..900&family=Moul&family=Nokora:wght@400;700&family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap"
+          href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400..900&family=Kantumruy+Pro:ital,wght@0,100..900;1,100..900&family=Noto+Serif+Khmer:wght@400..700&family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&display=swap"
           rel="stylesheet"
         />
       </head>
