@@ -381,6 +381,46 @@ body::before {
   border-bottom-color: var(--temple-gold);
 }
 
+/* Burger toggle — mobile only, revealed in the 900px query */
+.header-burger {
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  gap: 5px;
+  width: 38px;
+  height: 38px;
+  padding: 0;
+  margin-left: auto;
+  flex-shrink: 0;
+  background-color: rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(229, 195, 101, 0.28);
+  border-radius: 6px;
+  cursor: pointer;
+  align-items: center;
+}
+
+.header-burger span {
+  display: block;
+  width: 18px;
+  height: 2px;
+  border-radius: 2px;
+  background-color: var(--temple-gold-light);
+  transition: transform 0.25s ease, opacity 0.2s ease;
+}
+
+/* Bars fold into an X while the panel is open */
+.header-burger.is-open span:nth-child(1) {
+  transform: translateY(7px) rotate(45deg);
+}
+
+.header-burger.is-open span:nth-child(2) {
+  opacity: 0;
+}
+
+.header-burger.is-open span:nth-child(3) {
+  transform: translateY(-7px) rotate(-45deg);
+}
+
 .header-kicker {
   font-family: var(--font-sans-khmer);
   font-size: 11px;
@@ -950,6 +990,7 @@ body::before {
 
 .search-input {
   width: 100%;
+  box-sizing: border-box;
   padding: 14px 16px 14px 48px;
   font-family: var(--font-sans-khmer);
   font-size: 15px;
@@ -1193,8 +1234,10 @@ body::before {
     gap: 32px;
   }
   
+  /* Clears the 22px decorative frame and corner flourishes so hero copy never
+     sits on top of the border design */
   .portal-header.hero-mode {
-    padding: 36px 16px;
+    padding: 56px 40px 72px 40px;
   }
 
   .portal-header.scrolled-mode {
@@ -1226,8 +1269,24 @@ body::before {
     gap: 8px;
   }
 
-  .header-nav {
-    gap: 16px;
+  /* Lets the nav panel wrap below the brand/burger line */
+  .header-top-row {
+    flex-wrap: wrap;
+  }
+
+  /* Keeps the indicator inside the bottom foliate band */
+  .hero-scroll-indicator {
+    bottom: 40px;
+  }
+
+  .header-burger {
+    display: flex;
+  }
+
+  /* Collapsed bar only: logo stays, wordmark goes — too narrow for both.
+     The hero keeps the full wordmark. */
+  .scrolled-mode .header-kicker-text {
+    display: none;
   }
 
   .header-nav-link {
@@ -1235,8 +1294,50 @@ body::before {
     letter-spacing: 1.2px;
   }
 
-  .scrolled-mode .header-nav {
+  /* Collapses into a panel under the bar, opened by the burger */
+  .header-nav {
     display: none;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 14px;
+    width: 100%;
+    margin-top: 14px;
+    padding-top: 14px;
+    border-top: 1px solid rgba(229, 195, 101, 0.15);
+  }
+
+  .header-nav.is-open {
+    display: flex;
+  }
+
+  /* The bar is a fixed 60px, so the open panel has to float over the page
+     rather than expand the header */
+  .scrolled-mode .header-nav.is-open {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    margin-top: 0;
+    padding: 16px;
+    background: #2E0C07;
+    border-bottom: 2px solid var(--temple-gold);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35);
+    z-index: 101;
+  }
+
+  /* `display: contents` on the wrappers would otherwise strand the panel's
+     absolute positioning */
+  .scrolled-mode .header-container {
+    position: static;
+  }
+
+  /* The header clips its grain/frame in hero mode, but that same clip would
+     swallow the dropdown, which hangs entirely below the 60px bar */
+  .portal-header.scrolled-mode {
+    overflow: visible;
+  }
+
+  .scrolled-mode .header-burger {
+    order: 3;
   }
 
   .portal-container {

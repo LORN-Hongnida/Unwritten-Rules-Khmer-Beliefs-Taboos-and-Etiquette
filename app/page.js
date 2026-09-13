@@ -8,11 +8,12 @@ import EntryCard from "../components/EntryCard";
 export default function Home() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   // Filter entries based on search term: match any field containing the term
   const filteredEntries = entries.filter((entry) => {
-    if (!searchTerm) return true;
-    const lowerSearchTerm = searchTerm.toLowerCase();
+    const lowerSearchTerm = searchTerm.trim().toLowerCase();
+    if (!lowerSearchTerm) return true;
     return Object.values(entry).some(
       (value) =>
         value != null &&
@@ -57,6 +58,8 @@ export default function Home() {
   };
 
   const handleNavClick = (e) => {
+    setIsMenuOpen(false);
+
     const id = e.currentTarget.getAttribute("href");
     const target = document.querySelector(id);
     if (!target) return;
@@ -102,7 +105,7 @@ export default function Home() {
                     />
                   </svg>
                 </div>
-                <span>Khmer Living Archive</span>
+                <span className="header-kicker-text">Khmer Living Archive</span>
               </a>
 
               <div className="header-curator-pill">
@@ -110,7 +113,22 @@ export default function Home() {
               </div>
             </div>
 
-            <nav className="header-nav" aria-label="Primary">
+            <button
+              type="button"
+              className={`header-burger ${isMenuOpen ? 'is-open' : ''}`}
+              aria-label="Menu"
+              aria-expanded={isMenuOpen}
+              onClick={() => setIsMenuOpen((open) => !open)}
+            >
+              <span />
+              <span />
+              <span />
+            </button>
+
+            <nav
+              className={`header-nav ${isMenuOpen ? 'is-open' : ''}`}
+              aria-label="Primary"
+            >
               <a href="#archive-entries" className="header-nav-link" onClick={handleNavClick}>Entries</a>
               <a href="#academic-note" className="header-nav-link" onClick={handleNavClick}>Academic Note</a>
             </nav>
