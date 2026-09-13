@@ -5,11 +5,15 @@ import collection from "../collection.config.js";
 import entries from "../data/entries.js";
 import EntryCard from "../components/EntryCard";
 import SiteNav from "../components/SiteNav";
+import HeroSection from "../components/HeroSection";
 
 const NAV_LINKS = [
   { href: "#archive-entries", label: "Browse Archive" },
   { href: "#academic-note", label: "Academic Note" },
 ];
+
+// Counted from the entries themselves so the hero stat cannot drift.
+const CATEGORY_COUNT = new Set(entries.map((entry) => entry.category)).size;
 
 export default function Home() {
   const [searchTerm, setSearchTerm] = useState('');
@@ -58,25 +62,12 @@ export default function Home() {
     <div>
       <SiteNav links={NAV_LINKS} />
 
-      <header className="legacy-hero">
-        <div className="header-container">
-          <div className="hero-split">
-            <div className="hero-copy">
-              <h1 className="portal-title">{collection.name}</h1>
-              <p className="portal-khmer-subtitle">បណ្តុំជំនឿ អរិយជំនឿ និងក្បួនច្បាប់មកតៗគ្នារបស់ខ្មែរ</p>
-              <p className="portal-description">{collection.description}</p>
-              <div className="header-curator-pill">
-                <span>✒ Curated by <strong>{collection.curator}</strong></span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="hero-scroll-indicator" onClick={scrollToArchive}>
-          <span>Enter the Archive</span>
-          <span className="scroll-arrow">↓</span>
-        </div>
-      </header>
+      <HeroSection
+        collection={collection}
+        entryCount={entries.length}
+        categoryCount={CATEGORY_COUNT}
+        onBrowse={scrollToArchive}
+      />
 
       <div className="portal-container">
         <div className="portal-grid">
