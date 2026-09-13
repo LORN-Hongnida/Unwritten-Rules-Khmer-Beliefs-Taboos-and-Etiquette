@@ -49,24 +49,35 @@
   /* Per-category accent. Sections set data-category to retint themselves. */
   --accent: var(--gold);
   --accent-glow: rgba(229, 193, 88, 0.18);
+  --surface: var(--teak-950);
+  --surface-nav: #160a04;
 }
 
-/* Category accents. The reference ships a full theme table per category;
-   here one accent variable carries the difference and every surface
-   inherits it. */
+/* Category accents, taken from the reference theme table.
+   The reference ships a full class map per category; here a handful of
+   variables carry the difference and every surface inherits them. */
 [data-category="beliefs"] {
-  --accent: #e5c158;
-  --accent-glow: rgba(229, 193, 88, 0.18);
+  --accent: #e08712;
+  --accent-glow: rgba(224, 135, 18, 0.18);
+  --surface: #130702;
+  --surface-nav: #1a0902;
+  --ink-muted: #c4ad99;
 }
 
 [data-category="taboos"] {
-  --accent: #b07cc6;
-  --accent-glow: rgba(176, 124, 198, 0.18);
+  --accent: #93a7be;
+  --accent-glow: rgba(147, 167, 190, 0.18);
+  --surface: #090e18;
+  --surface-nav: #0c1322;
+  --ink-muted: #94a3b8;
 }
 
 [data-category="etiquette"] {
-  --accent: #6fae8e;
-  --accent-glow: rgba(111, 174, 142, 0.18);
+  --accent: #dfbe62;
+  --accent-glow: rgba(223, 190, 98, 0.18);
+  --surface: #150a11;
+  --surface-nav: #180a13;
+  --ink-muted: #c7afba;
 }
 
 /* Base HTML Styles */
@@ -1438,4 +1449,252 @@ body::before {
   .entries-title {
     font-size: 22px;
   }
+}
+
+/* ==========================================================================
+   Site navigation — revamped Gold & Teak app bar
+   Replaces the old .portal-header chrome. Sticky, translucent, and tinted
+   by whichever --accent the surrounding section is using.
+   ========================================================================== */
+
+.site-nav {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  width: 100%;
+  background-color: color-mix(in srgb, var(--surface-nav) 92%, transparent);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--gold-soft);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.45);
+  transition: background-color 0.7s ease, border-color 0.7s ease;
+}
+
+.site-nav-inner {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 10px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+/* --- Brand lockup ------------------------------------------------------- */
+
+.site-nav-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  min-width: 0;
+  flex-shrink: 0;
+}
+
+.site-nav-mark {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+  border-radius: 10px;
+  background-color: var(--teak-900);
+  border: 1px solid var(--gold-soft);
+  color: var(--accent);
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.5);
+  transition: color 0.5s ease, border-color 0.5s ease;
+}
+
+.site-nav-mark svg {
+  width: 20px;
+  height: 20px;
+}
+
+.site-nav-brand:hover .site-nav-mark {
+  border-color: var(--gold-strong);
+}
+
+.site-nav-wordmark {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-width: 0;
+  line-height: 1.25;
+}
+
+.site-nav-wordmark strong {
+  font-family: var(--font-serif-title);
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+  white-space: nowrap;
+}
+
+.site-nav-wordmark small {
+  font-family: var(--font-serif-title);
+  font-size: 11px;
+  font-weight: 400;
+  letter-spacing: 0.02em;
+  color: var(--ink-muted);
+  white-space: nowrap;
+}
+
+/* --- Links -------------------------------------------------------------- */
+
+.site-nav-links {
+  display: flex;
+  align-items: center;
+  gap: 28px;
+}
+
+.site-nav-link {
+  position: relative;
+  padding: 4px 0;
+  font-family: var(--font-serif-title);
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--ink-muted);
+  text-decoration: none;
+  white-space: nowrap;
+  transition: color 0.2s ease;
+}
+
+.site-nav-link::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -4px;
+  height: 2px;
+  border-radius: 999px;
+  background-color: var(--accent);
+  transform: scaleX(0);
+  transition: transform 0.3s ease;
+}
+
+.site-nav-link:hover,
+.site-nav-link:focus-visible {
+  color: var(--ink);
+}
+
+.site-nav-link:hover::after,
+.site-nav-link:focus-visible::after {
+  transform: scaleX(1);
+}
+
+/* --- Mobile burger ------------------------------------------------------ */
+
+.site-nav-burger {
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  gap: 5px;
+  width: 40px;
+  height: 40px;
+  padding: 0 8px;
+  background: var(--teak-900);
+  border: 1px solid var(--gold-soft);
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.site-nav-burger span {
+  display: block;
+  height: 2px;
+  width: 100%;
+  border-radius: 2px;
+  background-color: var(--accent);
+  transition: transform 0.3s ease, opacity 0.2s ease;
+}
+
+.site-nav-burger.is-open span:nth-child(1) {
+  transform: translateY(7px) rotate(45deg);
+}
+
+.site-nav-burger.is-open span:nth-child(2) {
+  opacity: 0;
+}
+
+.site-nav-burger.is-open span:nth-child(3) {
+  transform: translateY(-7px) rotate(-45deg);
+}
+
+@media (max-width: 720px) {
+  .site-nav-burger {
+    display: flex;
+  }
+
+  .site-nav-wordmark small {
+    display: none;
+  }
+
+  .site-nav-links {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0;
+    padding: 0 16px;
+    max-height: 0;
+    overflow: hidden;
+    background-color: var(--surface-nav);
+    border-bottom: 1px solid transparent;
+    transition: max-height 0.3s ease, border-color 0.3s ease;
+  }
+
+  .site-nav-links.is-open {
+    max-height: 240px;
+    border-bottom-color: var(--gold-soft);
+  }
+
+  .site-nav-link {
+    padding: 14px 0;
+    font-size: 15px;
+    border-top: 1px solid rgba(229, 193, 88, 0.12);
+  }
+
+  .site-nav-link::after {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .site-nav,
+  .site-nav-mark,
+  .site-nav-link,
+  .site-nav-link::after,
+  .site-nav-burger span,
+  .site-nav-links {
+    transition: none;
+  }
+}
+
+/* Interim hero: the old banner content in normal flow, now that the nav is
+   its own sticky element. Restyled properly in the next step. */
+.legacy-hero {
+  position: relative;
+  background: radial-gradient(circle at center, #4B140C 0%, #260A06 100%);
+  color: #FAF5EC;
+  border-bottom: 6px solid var(--temple-gold);
+  padding: 72px 24px 96px;
+  overflow: hidden;
+}
+
+.legacy-hero .header-container {
+  max-width: 1180px;
+  margin: 0 auto;
+}
+
+.legacy-hero .hero-split {
+  grid-template-columns: minmax(0, 1fr);
+  margin-top: 0;
+}
+
+.legacy-hero .hero-scroll-indicator {
+  position: static;
+  transform: none;
+  margin: 40px auto 0;
 }
