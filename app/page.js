@@ -67,18 +67,6 @@ export default function Home() {
     }
   };
 
-  const handleNavClick = (e) => {
-    const id = e.currentTarget.getAttribute("href");
-    const target = document.querySelector(id);
-    if (!target) return;
-
-    e.preventDefault();
-
-    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    target.scrollIntoView({ behavior: reduced ? "auto" : "smooth" });
-
-    if (history.replaceState) history.replaceState(null, "", id);
-  };
 
 
   return (
@@ -156,32 +144,46 @@ export default function Home() {
         </section>
       </div>
 
-      <footer className="portal-footer">
-        <div className="footer-container">
-          <div className="footer-top-row">
-            <div className="footer-brand">
-              <h2 className="footer-title">KHMER LIVING ARCHIVE (បណ្ណសាររស់ខ្មែរ)</h2>
-              <p className="footer-subtitle">
-                A student-driven digital preservation initiative collecting Cambodian folk beliefs, taboos, and household customs.
+      <footer className="site-footer" id="academic-note">
+        <div className="site-footer-inner">
+          <div className="site-footer-columns">
+            <div className="site-footer-col">
+              <div className="site-footer-crest">
+                <span className="site-footer-motif" aria-hidden="true">
+                  <ThemeVibeIcon motif={themes[selectedTheme].motifType} size={20} />
+                </span>
+                <span className="site-footer-khmer" lang="km">
+                  បណ្ណសារទំនៀមទម្លាប់ខ្មែរ
+                </span>
+              </div>
+
+              <p className="site-footer-wordmark">{collection.name}</p>
+
+              <p className="site-footer-dedication">
+                Dedicated with gratitude to the grandmothers, grandfathers, and
+                oral storytellers who preserved these customs.
               </p>
             </div>
-            <div className="footer-academic" id="academic-note">
-              <h3 className="footer-institution">American University of Phnom Penh</h3>
-              <p className="footer-course">ICT 340 — Vibe Coding Project (Fall 2026)</p>
+
+            <div className="site-footer-col site-footer-col-academic">
+              <h3 className="site-footer-col-title">Academic Note</h3>
+              <p className="site-footer-institution">
+                American University of Phnom Penh
+              </p>
+              <p className="site-footer-course">
+                ICT 340 — Vibe Coding Project (Fall 2026)
+              </p>
+              <p className="site-footer-source">{collection.source.trim()}</p>
             </div>
           </div>
 
-          <div className="footer-divider" />
-
-          <div className="footer-bottom-row">
-            <p className="footer-copyright">
-              © 2026 Khmer Living Archive. Curated by <strong>{collection.curator}</strong>. Under construction through December 2026.
+          <div className="site-footer-bottom">
+            <p className="site-footer-copyright">
+              © 2026 {collection.name}. Curated by <strong>{collection.curator}</strong>.
             </p>
-            <div className="footer-links">
-              <a href="#academic-note" className="footer-link" onClick={handleNavClick}>Academic Note</a>
-              <span className="footer-link-dot">•</span>
-              <a href="#top" onClick={scrollToTop} className="footer-link">Back to top ↑</a>
-            </div>
+            <a href="#top" className="site-footer-top" onClick={scrollToTop}>
+              Back to top ↑
+            </a>
           </div>
         </div>
       </footer>
