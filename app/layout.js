@@ -1,5 +1,6 @@
 import collection from "../collection.config.js";
 import "./globals.css";
+import ThemeProvider from "../components/ThemeProvider";
 
 export const metadata = {
   title: `${collection.name} — Khmer Living Archive`,
@@ -22,7 +23,7 @@ export default function RootLayout({ children }) {
         />
       </head>
       <body>
-        {children}
+        <ThemeProvider>{children}</ThemeProvider>
       </body>
     </html>
   );

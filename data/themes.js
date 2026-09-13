@@ -10,6 +10,11 @@ const themes = {
     vibeTagEn: "National Heritage & Living Wisdom",
     vibeTagKm: "បេតិកភណ្ឌ និងពុទ្ធោវាទដូនតា",
     motifType: "lotus",
+    browse: {
+      titleKm: "រុករកក្បួនច្បាប់ និងទំនៀមទម្លាប់ខ្មែរទាំងអស់",
+      subtitle:
+        "Search, filter, and study every recorded Khmer belief, taboo, and point of etiquette in the archive.",
+    },
     hero: {
       titleEn: "Unwritten Rules: the whole archive",
       subtitleEn: "Beliefs, taboos and etiquette in one collection",
@@ -28,6 +33,11 @@ const themes = {
     vibeTagEn: "Royal Elegance & Classical Decorum",
     vibeTagKm: "សោភ័ណភាពរាជវាំង និងគំនាប់សីលធម៌",
     motifType: "crown",
+    browse: {
+      titleKm: "រុករកសុជីវធម៌ និងការគោរពខ្មែរ",
+      subtitle:
+        "Search and study the manners, respectful postures, and social conduct passed down across Cambodian families.",
+    },
     hero: {
       titleEn: "Unwritten Rules: Khmer etiquette",
       subtitleEn: "Decorum, respect, and traditional social conduct",
@@ -46,6 +56,11 @@ const themes = {
     vibeTagEn: "Childhood Stilt House & Amber Lantern Light",
     vibeTagKm: "ផ្ទះឈើកាលពីកុមារភាព និងពន្លឺចង្កៀងប្រេងកាត",
     motifType: "lantern",
+    browse: {
+      titleKm: "រុករកជំនឿ និងក្បួនច្បាប់ខ្មែរ",
+      subtitle:
+        "Search and study the household omens, spiritual customs, and elder wisdom recorded in this archive.",
+    },
     hero: {
       titleEn: "Unwritten Rules: Khmer beliefs",
       subtitleEn: "Domestic omens, spiritual customs, and elder wisdom",
@@ -64,6 +79,11 @@ const themes = {
     vibeTagEn: "Midnight Shadows & Mystical Night Sky",
     vibeTagKm: "រាត្រីអាធ្រាត្រ មេឃងងឹត និងបម្រាមការពារ",
     motifType: "moon",
+    browse: {
+      titleKm: "រុករកការហាមប្រាមខ្មែរ",
+      subtitle:
+        "Search and study the protective prohibitions and nocturnal warnings meant to keep the household safe.",
+    },
     hero: {
       titleEn: "Unwritten Rules: Khmer taboos",
       subtitleEn: "Protective nocturnal boundaries and ancestral warnings",

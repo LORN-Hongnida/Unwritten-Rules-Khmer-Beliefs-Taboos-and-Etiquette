@@ -1,6 +1,7 @@
 'use client';
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import Link from "next/link";
 import collection from "../collection.config.js";
 import entries from "../data/entries.js";
 import EntryCard from "../components/EntryCard";
@@ -10,9 +11,10 @@ import EntryDetailModal from "../components/EntryDetailModal";
 import ThemeAtmosphereBackdrop from "../components/ThemeAtmosphereBackdrop";
 import themes from "../data/themes.js";
 import { ThemeVibeIcon } from "../components/KbachMotifs";
+import { useTheme } from "../components/ThemeProvider";
 
 const NAV_LINKS = [
-  { href: "#archive-entries", label: "Browse Archive" },
+  { href: "/browse", label: "Browse Archive" },
   { href: "#academic-note", label: "Academic Note" },
 ];
 
@@ -29,17 +31,8 @@ const categoryCounts = entries.reduce(
 );
 
 export default function Home() {
-  const [selectedTheme, setSelectedTheme] = useState('all');
+  const { selectedTheme, setSelectedTheme, isDark, toggleMode } = useTheme();
   const [openEntry, setOpenEntry] = useState(null);
-  const [isDark, setIsDark] = useState(true);
-
-  // The theme tables in globals.css key off these two attributes, so setting
-  // them here retints every surface at once.
-  useEffect(() => {
-    const root = document.documentElement;
-    root.setAttribute('data-theme', selectedTheme);
-    root.setAttribute('data-mode', isDark ? 'dark' : 'light');
-  }, [selectedTheme, isDark]);
 
   // The theme doubles as a category filter: picking a theme narrows the
   // archive to that category, and "all" leaves it whole.
@@ -79,7 +72,7 @@ export default function Home() {
         selectedTheme={selectedTheme}
         onSelectTheme={setSelectedTheme}
         isDark={isDark}
-        onToggleMode={() => setIsDark((dark) => !dark)}
+        onToggleMode={toggleMode}
       />
 
       <HeroSection
@@ -118,10 +111,10 @@ export default function Home() {
 
             {/* The home page shows a sample; the full collection lives on the
                 Browse Archive page. */}
-            <a href="#archive-entries" className="entries-browse-link">
+            <Link href="/browse" className="entries-browse-link">
               <span>Browse the archive</span>
               <span className="entries-browse-arrow" aria-hidden="true">→</span>
-            </a>
+            </Link>
           </div>
 
           <div className="entries-grid">

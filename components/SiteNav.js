@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from "react";
+import Link from "next/link";
 import { ThemeVibeIcon } from "./KbachMotifs";
 import ThemeDropdown from "./ThemeDropdown";
 
@@ -55,30 +56,34 @@ export default function SiteNav({
   const handleNavClick = (e) => {
     setIsMenuOpen(false);
 
-    const id = e.currentTarget.getAttribute("href");
-    const target = document.querySelector(id);
+    // Route links (/browse) navigate normally; only in-page anchors scroll.
+    const href = e.currentTarget.getAttribute("href");
+    if (!href || !href.startsWith("#")) return;
+
+    const target = document.querySelector(href);
     if (!target) return;
 
     e.preventDefault();
     scrollToTarget(target);
-    if (history.replaceState) history.replaceState(null, "", id);
+    if (history.replaceState) history.replaceState(null, "", href);
   };
 
   const handleBrandClick = (e) => {
-    e.preventDefault();
     setIsMenuOpen(false);
 
+    // Already home: scroll to the top instead of a no-op navigation.
+    // Anywhere else, let the Link route back to "/".
+    if (window.location.pathname !== "/") return;
+
+    e.preventDefault();
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     window.scrollTo({ top: 0, behavior: reduced ? "auto" : "smooth" });
-    if (history.replaceState) {
-      history.replaceState(null, "", window.location.pathname);
-    }
   };
 
   return (
     <nav className="site-nav" aria-label="Primary">
       <div className="site-nav-inner">
-        <a href="#top" className="site-nav-brand" onClick={handleBrandClick}>
+        <Link href="/" className="site-nav-brand" onClick={handleBrandClick}>
           <span className="site-nav-mark" aria-hidden="true">
             <ThemeVibeIcon motif={motif} size={20} />
           </span>
@@ -86,7 +91,7 @@ export default function SiteNav({
             <strong>Unwritten Rules</strong>
             <small>Khmer beliefs, taboos and etiquette</small>
           </span>
-        </a>
+        </Link>
 
         <div className="site-nav-actions">
           <div className="site-nav-theme">
@@ -144,16 +149,27 @@ export default function SiteNav({
         </div>
 
         <div className={`site-nav-links ${isMenuOpen ? "is-open" : ""}`}>
-          {links.map((link) => (
-            <a
-              key={link.href}
-              href={link.href}
-              className="site-nav-link"
-              onClick={handleNavClick}
-            >
-              {link.label}
-            </a>
-          ))}
+          {links.map((link) =>
+            link.href.startsWith("#") ? (
+              <a
+                key={link.href}
+                href={link.href}
+                className="site-nav-link"
+                onClick={handleNavClick}
+              >
+                {link.label}
+              </a>
+            ) : (
+              <Link
+                key={link.href}
+                href={link.href}
+                className="site-nav-link"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                {link.label}
+              </Link>
+            )
+          )}
         </div>
       </div>
     </nav>
