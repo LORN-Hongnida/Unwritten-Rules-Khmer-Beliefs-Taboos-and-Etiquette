@@ -6,8 +6,8 @@ import { KbachCorner, KhmerFriezeBorder, ThemeVibeIcon } from "./KbachMotifs";
 // belonging to its realm even when the archive is unfiltered.
 const CATEGORY_BADGES = {
   etiquette: { motif: "crown", labelEn: "Etiquette", labelKm: "សុជីវធម៌" },
-  beliefs: { motif: "lantern", labelEn: "Sacred Belief", labelKm: "ជំនឿក្បួនច្បាប់" },
-  taboos: { motif: "moon", labelEn: "Taboo Warning", labelKm: "ការហាមប្រាម" },
+  beliefs: { motif: "lantern", labelEn: "Belief", labelKm: "ជំនឿ" },
+  taboos: { motif: "moon", labelEn: "Taboo", labelKm: "ការហាមប្រាម" },
 };
 
 
@@ -50,7 +50,21 @@ export default function EntryCard({ entry, onSelect, actions = null }) {
     <article
       className="entry-card"
       data-category={entry.category}
-      onClick={() => onSelect(entry)}
+      onClick={(e) => {
+        // Controls in the actions slot (the save button, later) must not also
+        // open the modal.
+        if (e.target.closest(".entry-card-actions")) return;
+        onSelect(entry);
+      }}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          onSelect(entry);
+        }
+      }}
+      tabIndex={0}
+      role="button"
+      aria-label={`${entry.title} — open details`}
     >
       <div className="entry-card-frieze entry-card-frieze-top" aria-hidden="true">
         <KhmerFriezeBorder motif={motif} height={8} />

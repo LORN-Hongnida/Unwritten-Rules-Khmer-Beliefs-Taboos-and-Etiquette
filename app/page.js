@@ -6,6 +6,7 @@ import entries from "../data/entries.js";
 import EntryCard from "../components/EntryCard";
 import SiteNav from "../components/SiteNav";
 import HeroSection from "../components/HeroSection";
+import EntryDetailModal from "../components/EntryDetailModal";
 import ThemeAtmosphereBackdrop from "../components/ThemeAtmosphereBackdrop";
 import themes from "../data/themes.js";
 
@@ -20,6 +21,7 @@ const CATEGORY_COUNT = new Set(entries.map((entry) => entry.category)).size;
 export default function Home() {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedTheme, setSelectedTheme] = useState('all');
+  const [openEntry, setOpenEntry] = useState(null);
   const [isDark, setIsDark] = useState(true);
 
   // The theme tables in globals.css key off these two attributes, so setting
@@ -139,7 +141,7 @@ export default function Home() {
           <div className="entries-grid">
             {filteredEntries.length > 0 ? (
               filteredEntries.map((entry) => (
-                <EntryCard key={entry.id} entry={entry} onSelect={() => {}} />
+                <EntryCard key={entry.id} entry={entry} onSelect={setOpenEntry} />
               ))
             ) : (
               <div className="empty-state" style={{
@@ -190,6 +192,8 @@ export default function Home() {
         </div>
       </footer>
       </div>
+
+      <EntryDetailModal entry={openEntry} onClose={() => setOpenEntry(null)} />
     </div>
   );
 }
