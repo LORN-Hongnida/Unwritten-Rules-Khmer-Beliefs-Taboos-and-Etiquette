@@ -74,7 +74,8 @@ function PersonIcon() {
 }
 
 export default function EntryDetailModal({ entry, onClose, shareHref }) {
-  const [copied, setCopied] = useState(false);
+  // Result of the last copy attempt: "link" | "failed" | null.
+  const [copied, setCopied] = useState(null);
   const panelRef = useRef(null);
   const previouslyFocused = useRef(null);
 
@@ -137,25 +138,25 @@ export default function EntryDetailModal({ entry, onClose, shareHref }) {
   const meta = CATEGORY_META[entry.category];
   const motif = meta.motif;
 
-  const handleCopy = async () => {
-    // A citation nobody can follow is not much of a share, so the entry's own
-    // URL goes in alongside the text.
-    const url = shareHref ? new URL(shareHref, window.location.origin).href : null;
+  const shareUrl = shareHref
+    ? new URL(shareHref, window.location.origin).href
+    : null;
 
-    const text = `"${entry.titleKm} (${entry.title})"\nTraditional belief: ${entry.description}${
-      entry.reason ? `\nWhy it exists: ${entry.reason}` : ""
-    }\n— Unwritten Rules: Khmer Beliefs, Taboos and Etiquette${
-      url ? `\n${url}` : ""
-    }`;
-
+  // The link alone, so it can go straight into an address bar or a chat box.
+  //
+  // Only confirm on an actual write: clipboard access can be refused (it needs a
+  // secure context), and a "Copied" that copied nothing is worse than an error.
+  const handleShare = async () => {
+    if (!shareUrl) return;
     try {
-      await navigator.clipboard.writeText(text);
+      await navigator.clipboard.writeText(shareUrl);
     } catch {
-      // Clipboard can be blocked; the confirmation still tells the reader the
-      // citation was assembled.
+      setCopied("failed");
+      setTimeout(() => setCopied(null), 2500);
+      return;
     }
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2500);
+    setCopied("link");
+    setTimeout(() => setCopied(null), 2500);
   };
 
   return (
@@ -205,11 +206,17 @@ export default function EntryDetailModal({ entry, onClose, shareHref }) {
             <button
               type="button"
               className="modal-share"
-              onClick={handleCopy}
-              title="Copy citation to clipboard"
+              onClick={handleShare}
+              title="Copy a link to this entry"
             >
-              {copied ? <CheckIcon /> : <ShareIcon />}
-              <span>{copied ? "Copied" : "Share"}</span>
+              {copied === "link" ? <CheckIcon /> : <ShareIcon />}
+              <span>
+                {copied === "link"
+                  ? "Copied"
+                  : copied === "failed"
+                    ? "Failed"
+                    : "Share"}
+              </span>
             </button>
 
             <button
