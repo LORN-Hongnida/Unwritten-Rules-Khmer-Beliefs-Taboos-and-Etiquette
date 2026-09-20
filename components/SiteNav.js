@@ -5,6 +5,8 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ThemeVibeIcon } from "./KbachMotifs";
 import ThemeDropdown from "./ThemeDropdown";
+import UserNavAuth from "./UserNavAuth";
+
 
 // Inline icons; the reference uses lucide-react, which is not a dependency here.
 function MoonIcon() {
@@ -191,7 +193,9 @@ export default function SiteNav({
               </Link>
             )
           )}
+          <UserNavAuth selectedTheme={selectedTheme} onNavClick={() => setIsMenuOpen(false)} />
         </div>
+
       </div>
     </nav>
   );
