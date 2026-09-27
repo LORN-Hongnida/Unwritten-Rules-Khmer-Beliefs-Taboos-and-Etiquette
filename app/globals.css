@@ -4441,6 +4441,37 @@ button:hover .kbach-micro {
   box-shadow: 0 0 0 3px rgba(164, 74, 56, 0.25);
 }
 
+.auth-input-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.auth-input-wrapper .auth-input {
+  padding-right: 42px;
+}
+
+.auth-password-toggle {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  padding: 4px;
+  cursor: pointer;
+  color: var(--ink-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  transition: color 0.2s ease;
+}
+
+.auth-password-toggle:hover {
+  color: var(--accent);
+}
+
+
 
 .auth-submit {
   margin-top: 6px;
@@ -4476,9 +4507,25 @@ button:hover .kbach-micro {
   line-height: 1.5;
 }
 
-[data-mode="light"] .auth-error {
+.auth-field-error {
+  margin: 4px 0 0;
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--krama-red-light, #c2705c);
+}
+
+.auth-required {
+  color: var(--krama-red, #a44a38);
+  margin-left: 2px;
+}
+
+[data-mode="light"] .auth-error,
+[data-mode="light"] .auth-field-error,
+[data-mode="light"] .auth-required {
   color: var(--krama-red-dark, #7a2a1b);
 }
+
+
 
 .auth-footer {
   margin-top: 20px;
