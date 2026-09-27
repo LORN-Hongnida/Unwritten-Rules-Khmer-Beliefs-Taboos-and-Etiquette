@@ -17,16 +17,24 @@ export default function UserNavAuth({ selectedTheme = 'all', onNavClick }) {
   const router = useRouter();
 
   useEffect(() => {
-    const supabase = createClient();
-    supabase.auth.getUser().then(({ data: { user: currentUser } }) => {
-      setUser(currentUser);
-    });
+    if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY) {
+      return;
+    }
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null);
-    });
+    try {
+      const supabase = createClient();
+      supabase.auth.getUser().then(({ data: { user: currentUser } }) => {
+        setUser(currentUser);
+      }).catch(() => {});
 
-    return () => subscription.unsubscribe();
+      const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+        setUser(session?.user ?? null);
+      });
+
+      return () => subscription?.unsubscribe();
+    } catch {
+      // Ignore auth initialization errors if variables are not set
+    }
   }, []);
 
   useEffect(() => {
