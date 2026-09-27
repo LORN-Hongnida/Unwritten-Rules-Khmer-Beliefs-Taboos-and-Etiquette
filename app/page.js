@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import collection from "../collection.config.js";
-import entries from "../data/entries.js";
 import EntryCard from "../components/EntryCard";
 import SiteNav from "../components/SiteNav";
 import HeroSection from "../components/HeroSection";
@@ -12,22 +11,17 @@ import themes from "../data/themes.js";
 import { ThemeVibeIcon } from "../components/KbachMotifs";
 import { useTheme } from "../components/ThemeProvider";
 import useEntryRoute from "../components/useEntryRoute";
-
-// Counted from the entries themselves so the hero stat cannot drift.
-const CATEGORY_COUNT = new Set(entries.map((entry) => entry.category)).size;
+import useEntries from "../components/useEntries";
 
 // The home grid is a sample; the full collection lives on the browse page.
 const HOME_SAMPLE_SIZE = 6;
 
-// How many entries sit in each category, for the filter pills.
-const categoryCounts = entries.reduce(
-  (acc, entry) => ({ ...acc, [entry.category]: (acc[entry.category] || 0) + 1 }),
-  { all: entries.length, etiquette: 0, beliefs: 0, taboos: 0 }
-);
-
 export default function Home() {
   const { selectedTheme, setSelectedTheme, isDark, toggleMode } = useTheme();
   const { openEntry, setOpenEntry, buildHref } = useEntryRoute();
+  const { entries } = useEntries();
+
+  const categoryCount = new Set(entries.map((entry) => entry.category)).size;
 
   // The theme doubles as a category filter: picking a theme narrows the
   // archive to that category, and "all" leaves it whole.
@@ -71,7 +65,7 @@ export default function Home() {
 
       <HeroSection
         entryCount={themedEntries.length}
-        categoryCount={CATEGORY_COUNT}
+        categoryCount={categoryCount}
         curator={collection.curator}
         onBrowse={scrollToArchive}
         selectedTheme={selectedTheme}

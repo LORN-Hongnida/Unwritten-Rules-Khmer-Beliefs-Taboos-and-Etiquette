@@ -3,7 +3,6 @@
 import { useCallback } from "react";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import entries from "../../data/entries.js";
 import themes from "../../data/themes.js";
 import EntryCard from "../../components/EntryCard";
 import EntryDetailModal from "../../components/EntryDetailModal";
@@ -13,20 +12,22 @@ import ThemeAtmosphereBackdrop from "../../components/ThemeAtmosphereBackdrop";
 import { ThemeVibeIcon } from "../../components/KbachMotifs";
 import { useTheme } from "../../components/ThemeProvider";
 import useEntryRoute from "../../components/useEntryRoute";
-
-// How many entries sit in each category, for the filter pills.
-const categoryCounts = entries.reduce(
-  (acc, entry) => ({ ...acc, [entry.category]: (acc[entry.category] || 0) + 1 }),
-  { all: entries.length, etiquette: 0, beliefs: 0, taboos: 0 }
-);
+import useEntries from "../../components/useEntries";
 
 export default function BrowsePage() {
   const { selectedTheme, setSelectedTheme, isDark, toggleMode } = useTheme();
   const { openEntry, setOpenEntry, buildHref } = useEntryRoute();
+  const { entries } = useEntries();
 
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+
+  // How many entries sit in each category, for the filter pills.
+  const categoryCounts = entries.reduce(
+    (acc, entry) => ({ ...acc, [entry.category]: (acc[entry.category] || 0) + 1 }),
+    { all: entries.length, etiquette: 0, beliefs: 0, taboos: 0 }
+  );
 
   // The search term rides in the URL so a filtered view can be linked to and
   // survives a trip to an entry and back.
