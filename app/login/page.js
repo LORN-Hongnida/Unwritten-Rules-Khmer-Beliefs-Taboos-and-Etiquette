@@ -129,15 +129,15 @@ export default function LoginPage() {
       });
 
       if (authError) {
-        setGeneralError('Invalid email or password');
+        setGeneralError(authError.message || 'Invalid email or password');
         setLoading(false);
         return;
       }
 
       router.push('/');
       router.refresh();
-    } catch {
-      setGeneralError('Invalid email or password');
+    } catch (err) {
+      setGeneralError(err?.message || 'Invalid email or password');
       setLoading(false);
     }
   };

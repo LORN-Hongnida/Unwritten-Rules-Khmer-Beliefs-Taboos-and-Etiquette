@@ -73,6 +73,7 @@ export default function SignupPage() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [fieldErrors, setFieldErrors] = useState({});
   const [generalError, setGeneralError] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
   const [hasSubmitted, setHasSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
 
@@ -148,6 +149,7 @@ export default function SignupPage() {
   const handleSignup = async (e) => {
     e.preventDefault();
     setGeneralError('');
+    setSuccessMessage('');
     setHasSubmitted(true);
 
     const errors = validateSignup(email, password, confirmPassword);
@@ -161,21 +163,27 @@ export default function SignupPage() {
 
     try {
       const supabase = createClient();
-      const { error: authError } = await supabase.auth.signUp({
+      const { data, error: authError } = await supabase.auth.signUp({
         email: email.trim(),
         password,
       });
 
       if (authError) {
-        setGeneralError('Invalid email or password');
+        setGeneralError(authError.message || 'Failed to create account');
+        setLoading(false);
+        return;
+      }
+
+      if (data?.user && !data?.session) {
+        setSuccessMessage('Account created successfully! If email confirmation is enabled in your Supabase project, please check your inbox to confirm your email before signing in. (If you want instant sign-in, turn off "Confirm email" in Supabase Auth settings).');
         setLoading(false);
         return;
       }
 
       router.push('/');
       router.refresh();
-    } catch {
-      setGeneralError('Invalid email or password');
+    } catch (err) {
+      setGeneralError(err?.message || 'Failed to create account');
       setLoading(false);
     }
   };
@@ -206,6 +214,7 @@ export default function SignupPage() {
             </div>
 
             {generalError && <div className="auth-error">{generalError}</div>}
+            {successMessage && <div className="auth-success">{successMessage}</div>}
 
             <form className="auth-form" onSubmit={handleSignup} noValidate>
               <div className="auth-field">

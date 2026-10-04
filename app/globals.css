@@ -4507,6 +4507,16 @@ button:hover .kbach-micro {
   line-height: 1.5;
 }
 
+.auth-success {
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: 1px solid rgba(46, 125, 50, 0.4);
+  background-color: rgba(46, 125, 50, 0.15);
+  color: #81c784;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
 .auth-field-error {
   margin: 4px 0 0;
   font-size: 12px;
