@@ -103,6 +103,16 @@ export default function EntryCard({ entry, onSelect, actions = null }) {
             the banner is its heaviest element. */}
         {renderBanner()}
 
+        {entry.photo_url && (
+          <div className="entry-card-photo" style={{ margin: '12px 0 4px', borderRadius: '10px', overflow: 'hidden', border: '1px solid var(--border-subtle)' }}>
+            <img
+              src={entry.photo_url}
+              alt={entry.title}
+              style={{ width: '100%', height: '160px', objectFit: 'cover', display: 'block' }}
+            />
+          </div>
+        )}
+
         <h4 className="entry-card-title">{entry.title}</h4>
 
         <p className="entry-card-text">
@@ -114,7 +124,7 @@ export default function EntryCard({ entry, onSelect, actions = null }) {
           <span className="entry-card-place">
             <ContributorIcon />
             <span>
-              {entry.contributor} • {entry.place}
+              {entry.contributor ? `${entry.contributor}${entry.place ? ` • ${entry.place}` : ''}` : entry.place}
             </span>
           </span>
 

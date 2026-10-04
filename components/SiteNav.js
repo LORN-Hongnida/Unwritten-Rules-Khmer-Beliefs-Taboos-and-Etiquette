@@ -42,6 +42,7 @@ import themes from "../data/themes.js";
 const NAV_LINKS = [
   { href: "/", label: "Home" },
   { href: "/browse", label: "Browse Archive" },
+  { href: "/contribute", label: "Contribute" },
 ];
 
 // Moving between pages keeps the chosen theme: picking "Taboos" and then
