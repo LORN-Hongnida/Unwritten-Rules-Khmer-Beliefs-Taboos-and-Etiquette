@@ -7,6 +7,7 @@ import {
   KhmerFriezeBorder,
   ThemeVibeIcon,
 } from "./KbachMotifs";
+import EntryOwnerActions from "./EntryOwnerActions";
 
 // Same vocabulary as the cards, so an entry reads identically in both places.
 const CATEGORY_META = {
@@ -247,6 +248,22 @@ export default function EntryDetailModal({ entry, onClose, shareHref }) {
             <h3 className="modal-title">{entry.title}</h3>
           </div>
 
+          {entry.photo_url && (
+            <div className="modal-photo" style={{ margin: '16px 0', textAlign: 'center' }}>
+              <img
+                src={entry.photo_url}
+                alt={entry.title}
+                style={{
+                  maxWidth: '100%',
+                  maxHeight: '320px',
+                  objectFit: 'cover',
+                  borderRadius: '12px',
+                  border: '1px solid var(--border-subtle)'
+                }}
+              />
+            </div>
+          )}
+
           <KbachDivider />
 
           <div className="modal-panels">
@@ -299,7 +316,8 @@ export default function EntryDetailModal({ entry, onClose, shareHref }) {
           </div>
         </div>
 
-        <div className="modal-footer">
+        <div className="modal-footer" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <EntryOwnerActions entryId={entry.id} ownerId={entry.owner} entryTitle={entry.title} onClose={onClose} />
           <button type="button" className="modal-footer-close" onClick={onClose}>
             Close • បិទ
           </button>

@@ -2,14 +2,13 @@
 
 import { useCallback } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import entries from "../data/entries.js";
 
 // Which entry is open is part of the address, not just component state: that
 // is what makes the modal's share button able to hand someone a real link.
 //
 // Opening pushes a history entry so Back closes the modal; closing replaces it
 // so the reader does not have to press Back twice to leave the page.
-export default function useEntryRoute() {
+export default function useEntryRoute(entries = []) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();

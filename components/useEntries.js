@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import initialEntries from '../data/entries.js';
 import { createClient } from '../lib/supabase/client';
 
 export function normalizeEntry(item) {
@@ -14,6 +13,7 @@ export function normalizeEntry(item) {
     reason: item.reason,
     stillBelieved: item.still_believed || item.stillBelieved,
     place: item.place,
+    contributor: item.contributor || item.contributor_name || null,
     photo_url: item.photo_url,
     status: item.status || 'published',
     owner: item.owner,
@@ -22,7 +22,7 @@ export function normalizeEntry(item) {
 }
 
 export default function useEntries() {
-  const [entries, setEntries] = useState(() => initialEntries.map(normalizeEntry));
+  const [entries, setEntries] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -40,11 +40,15 @@ export default function useEntries() {
           .eq('status', 'published')
           .order('created_at', { ascending: false });
 
-        if (!error && data && data.length > 0) {
+        if (!error && data) {
           setEntries(data.map(normalizeEntry));
+        } else if (error) {
+          console.error('Failed to fetch entries from Supabase:', error);
+          setEntries([]);
         }
       } catch (err) {
         console.error('Failed to fetch entries from Supabase:', err);
+        setEntries([]);
       } finally {
         setLoading(false);
       }

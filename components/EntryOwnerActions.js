@@ -1,0 +1,112 @@
+'use client';
+
+import { useEffect, useState } from 'react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { createClient } from '../lib/supabase/client';
+
+import DeleteConfirmModal from './DeleteConfirmModal';
+
+export default function EntryOwnerActions({ entryId, ownerId, entryTitle = 'this entry', onClose }) {
+  const [currentUser, setCurrentUser] = useState(null);
+  const [deleting, setDeleting] = useState(false);
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+
+  useEffect(() => {
+    let isMounted = true;
+    async function fetchUser() {
+      try {
+        const supabase = createClient();
+        const { data: { user } } = await supabase.auth.getUser();
+        if (isMounted) setCurrentUser(user);
+      } catch {
+        // Ignore auth error
+      }
+    }
+    fetchUser();
+    return () => { isMounted = false; };
+  }, []);
+
+  if (!currentUser || !ownerId || currentUser.id !== ownerId) {
+    return null;
+  }
+
+  const handleDeleteConfirm = async () => {
+    setDeleting(true);
+    try {
+      const supabase = createClient();
+      const { data, error } = await supabase
+        .from('entries')
+        .delete()
+        .eq('id', entryId)
+        .select();
+
+      if (error || !data || data.length === 0) {
+        console.error('Delete refused or failed:', error);
+        alert("That change wasn't saved");
+        setDeleting(false);
+        setShowConfirmModal(false);
+        return;
+      }
+
+      setShowConfirmModal(false);
+      if (onClose) onClose();
+      window.location.href = '/browse';
+    } catch (err) {
+      console.error('Delete error:', err);
+      alert("That change wasn't saved");
+      setDeleting(false);
+      setShowConfirmModal(false);
+    }
+  };
+
+  return (
+    <>
+      <div className="entry-owner-actions" style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+        <Link
+          href={`/contribute?edit=${entryId}`}
+          className="owner-btn-edit"
+          onClick={() => onClose && onClose()}
+          style={{
+            padding: '6px 12px',
+            borderRadius: '6px',
+            fontSize: '12px',
+            fontWeight: 600,
+            color: 'var(--accent)',
+            border: '1px solid var(--accent)',
+            textDecoration: 'none',
+            cursor: 'pointer'
+          }}
+        >
+          Edit Entry / កែប្រែ
+        </Link>
+        <button
+          type="button"
+          className="owner-btn-delete"
+          onClick={() => setShowConfirmModal(true)}
+          disabled={deleting}
+          style={{
+            padding: '6px 12px',
+            borderRadius: '6px',
+            fontSize: '12px',
+            fontWeight: 600,
+            color: 'var(--krama-red, #a44a38)',
+            border: '1px solid var(--krama-red, #a44a38)',
+            background: 'transparent',
+            cursor: deleting ? 'not-allowed' : 'pointer'
+          }}
+        >
+          Delete / លុប
+        </button>
+      </div>
+
+      <DeleteConfirmModal
+        isOpen={showConfirmModal}
+        title={entryTitle}
+        loading={deleting}
+        onConfirm={handleDeleteConfirm}
+        onCancel={() => setShowConfirmModal(false)}
+      />
+    </>
+  );
+}

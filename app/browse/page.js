@@ -16,8 +16,8 @@ import useEntries from "../../components/useEntries";
 
 export default function BrowsePage() {
   const { selectedTheme, setSelectedTheme, isDark, toggleMode } = useTheme();
-  const { openEntry, setOpenEntry, buildHref } = useEntryRoute();
   const { entries } = useEntries();
+  const { openEntry, setOpenEntry, buildHref } = useEntryRoute(entries);
 
   const router = useRouter();
   const pathname = usePathname();

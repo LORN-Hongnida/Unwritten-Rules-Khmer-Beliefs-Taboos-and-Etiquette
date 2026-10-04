@@ -18,8 +18,8 @@ const HOME_SAMPLE_SIZE = 6;
 
 export default function Home() {
   const { selectedTheme, setSelectedTheme, isDark, toggleMode } = useTheme();
-  const { openEntry, setOpenEntry, buildHref } = useEntryRoute();
   const { entries } = useEntries();
+  const { openEntry, setOpenEntry, buildHref } = useEntryRoute(entries);
 
   const categoryCount = new Set(entries.map((entry) => entry.category)).size;
 
