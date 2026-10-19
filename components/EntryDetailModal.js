@@ -318,7 +318,7 @@ export default function EntryDetailModal({ entry, onClose, shareHref }) {
         <div className="modal-footer" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <EntryOwnerActions entryId={entry.id} ownerId={entry.owner} entryTitle={entry.title} onClose={onClose} />
           <button type="button" className="modal-footer-close" onClick={onClose}>
-            Close • បិទ
+            Close • <span className="btn-label-km" lang="km">បិទ</span>
           </button>
         </div>
       </div>
