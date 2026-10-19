@@ -3054,6 +3054,8 @@ button:hover .kbach-micro {
   font-weight: 700;
   line-height: 1.5;
   color: var(--heading-text);
+  overflow-wrap: break-word;
+  word-break: break-word;
 }
 
 /* --- Titles and text ------------------------------------------------------ */
@@ -3065,6 +3067,8 @@ button:hover .kbach-micro {
   font-weight: 700;
   line-height: 1.5;
   color: var(--heading-text);
+  overflow-wrap: break-word;
+  word-break: break-word;
 }
 
 .entry-card-title {
@@ -3077,6 +3081,8 @@ button:hover .kbach-micro {
   line-height: 1.45;
   letter-spacing: -0.005em;
   color: var(--ink);
+  overflow-wrap: break-word;
+  word-break: break-word;
 }
 
 .entry-card-text {
@@ -3089,6 +3095,8 @@ button:hover .kbach-micro {
   font-size: 12.5px;
   line-height: 1.625;
   color: var(--ink-muted);
+  overflow-wrap: break-word;
+  word-break: break-word;
 }
 
 .entry-card-text strong {
@@ -3580,6 +3588,11 @@ button:hover .kbach-micro {
   font-weight: 700;
   line-height: 1.45;
   color: var(--heading-text);
+  min-width: 0;
+  max-width: 100%;
+  overflow-wrap: break-word;
+  word-break: break-word;
+  text-align: center;
 }
 
 .modal-title {
@@ -3589,6 +3602,11 @@ button:hover .kbach-micro {
   font-weight: 700;
   line-height: 1.4;
   color: var(--ink);
+  min-width: 0;
+  max-width: 100%;
+  overflow-wrap: break-word;
+  word-break: break-word;
+  text-align: center;
 }
 
 /* --- Dual panels ---------------------------------------------------------- */
@@ -3683,6 +3701,8 @@ button:hover .kbach-micro {
   font-weight: 300;
   line-height: 1.7;
   color: var(--ink-muted);
+  overflow-wrap: break-word;
+  word-break: break-word;
 }
 
 .modal-panel-origin .modal-panel-text { color: var(--ink-muted); }
@@ -3714,6 +3734,8 @@ button:hover .kbach-micro {
   font-size: 13.5px;
   line-height: 1.7;
   color: var(--ink-muted);
+  overflow-wrap: break-word;
+  word-break: break-word;
 }
 
 /* --- Contributor ----------------------------------------------------------- */
@@ -4864,6 +4886,91 @@ button:hover .kbach-micro {
 
 .guidelines-list li {
   margin-bottom: 6px;
+}
+
+/* --- Character limit indicator ------------------------------------------- */
+
+.char-counter {
+  display: block;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--ink-muted);
+  text-align: right;
+  margin-top: 4px;
+}
+
+.char-counter.is-near-limit {
+  color: var(--gold, #d4a038);
+}
+
+.char-counter.is-at-limit {
+  color: var(--krama-red, #a44a38);
+}
+
+/* --- Photo Placeholders (Cards & Modals) ---------------------------------- */
+
+.entry-card-photo-placeholder {
+  height: 140px;
+  margin: 12px 0 4px;
+  border-radius: 10px;
+  border: 1px dashed var(--card-border);
+  background: var(--card-banner);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+  transition: border-color 0.2s ease;
+}
+
+.entry-card:hover .entry-card-photo-placeholder {
+  border-color: var(--accent);
+}
+
+.photo-placeholder-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  color: var(--accent);
+  opacity: 0.75;
+}
+
+.photo-placeholder-text {
+  font-size: 11px;
+  font-family: var(--font-serif-title);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+}
+
+.modal-photo-placeholder {
+  width: 100%;
+  height: 190px;
+  margin: 16px 0;
+  border-radius: 12px;
+  border: 1px dashed var(--card-border);
+  background: var(--input-bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-photo-placeholder-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  color: var(--accent);
+  opacity: 0.8;
+}
+
+.modal-photo-placeholder-label {
+  font-size: 13px;
+  font-family: var(--font-serif-title);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--badge-text);
 }
 
 

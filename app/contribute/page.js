@@ -180,6 +180,10 @@ export default function ContributePage() {
     const trimmedTitle = title.trim();
     const trimmedTitleKm = titleKm.trim();
     const trimmedDesc = description.trim();
+    const trimmedReason = reason.trim();
+    const trimmedPlace = place.trim();
+    const trimmedContributor = contributor.trim();
+    const trimmedStillBelieved = stillBelieved.trim();
 
     if (!trimmedTitle) {
       errors.title = 'English title is required.';
@@ -201,12 +205,28 @@ export default function ContributePage() {
       errors.description = 'Description is required.';
     } else if (trimmedDesc.length < 10) {
       errors.description = 'Description must be at least 10 characters long.';
+    } else if (trimmedDesc.length > 1000) {
+      errors.description = 'Description must not exceed 1000 characters.';
     }
 
-    // Photo is required for new entry, optional for edit
-    if (!editId && !photoFile) {
-      errors.photo = 'A photo is required for new entries.';
-    } else if (photoFile) {
+    if (trimmedReason.length > 1000) {
+      errors.reason = 'Practical origin must not exceed 1000 characters.';
+    }
+
+    if (trimmedContributor.length > 100) {
+      errors.contributor = 'Contributor name must not exceed 100 characters.';
+    }
+
+    if (trimmedPlace.length > 100) {
+      errors.place = 'Place must not exceed 100 characters.';
+    }
+
+    if (trimmedStillBelieved.length > 200) {
+      errors.stillBelieved = 'Still believed status must not exceed 200 characters.';
+    }
+
+    // Photo is optional: validate only if a file is provided
+    if (photoFile) {
       if (!ALLOWED_MIME_TYPES.includes(photoFile.type)) {
         errors.photo = 'Only JPEG, PNG, and WebP images are allowed.';
       } else if (photoFile.size > MAX_FILE_SIZE) {
@@ -455,11 +475,15 @@ export default function ContributePage() {
                         id="entry-title-km"
                         type="text"
                         lang="km"
+                        maxLength={150}
                         className={`auth-input ${fieldErrors.titleKm ? 'has-error' : ''}`}
                         placeholder="ឧទាហរណ៍៖ ក្អែកយំលើដំបូលផ្ទះ"
                         value={titleKm}
                         onChange={(e) => setTitleKm(e.target.value)}
                       />
+                      <span className={`char-counter ${titleKm.length >= 140 ? 'is-near-limit' : ''}`}>
+                        {titleKm.length} / 150
+                      </span>
                       {fieldErrors.titleKm && (
                         <p className="auth-field-error">{fieldErrors.titleKm}</p>
                       )}
@@ -473,11 +497,15 @@ export default function ContributePage() {
                       <input
                         id="entry-title"
                         type="text"
+                        maxLength={150}
                         className={`auth-input ${fieldErrors.title ? 'has-error' : ''}`}
                         placeholder="e.g. Crows crying over a rooftop"
                         value={title}
                         onChange={(e) => setTitle(e.target.value)}
                       />
+                      <span className={`char-counter ${title.length >= 140 ? 'is-near-limit' : ''}`}>
+                        {title.length} / 150
+                      </span>
                       {fieldErrors.title && (
                         <p className="auth-field-error">{fieldErrors.title}</p>
                       )}
@@ -499,12 +527,16 @@ export default function ContributePage() {
                     </label>
                     <textarea
                       id="entry-description"
+                      maxLength={1000}
                       className={`auth-input ${fieldErrors.description ? 'has-error' : ''}`}
                       rows={4}
                       placeholder="Describe what elders taught, what happens according to the belief, or how people react..."
                       value={description}
                       onChange={(e) => setDescription(e.target.value)}
                     />
+                    <span className={`char-counter ${description.length >= 950 ? 'is-near-limit' : ''}`}>
+                      {description.length} / 1000
+                    </span>
                     {fieldErrors.description && (
                       <p className="auth-field-error">{fieldErrors.description}</p>
                     )}
@@ -517,12 +549,19 @@ export default function ContributePage() {
                     </label>
                     <textarea
                       id="entry-reason"
+                      maxLength={1000}
                       className="auth-input"
                       rows={3}
                       placeholder="Why did elders pass this rule down? What practical danger or lesson does it serve?"
                       value={reason}
                       onChange={(e) => setReason(e.target.value)}
                     />
+                    <span className={`char-counter ${reason.length >= 950 ? 'is-near-limit' : ''}`}>
+                      {reason.length} / 1000
+                    </span>
+                    {fieldErrors.reason && (
+                      <p className="auth-field-error">{fieldErrors.reason}</p>
+                    )}
                   </div>
 
                   <div className="contribute-row-2col">
@@ -534,11 +573,15 @@ export default function ContributePage() {
                       <input
                         id="entry-contributor"
                         type="text"
+                        maxLength={100}
                         className="auth-input"
                         placeholder="e.g. Heng Vicheka, Grandmother Som, Parents"
                         value={contributor}
                         onChange={(e) => setContributor(e.target.value)}
                       />
+                      <span className={`char-counter ${contributor.length >= 90 ? 'is-near-limit' : ''}`}>
+                        {contributor.length} / 100
+                      </span>
                     </div>
 
                     <div className="auth-field">
@@ -549,11 +592,15 @@ export default function ContributePage() {
                       <input
                         id="entry-place"
                         type="text"
+                        maxLength={100}
                         className="auth-input"
                         placeholder="e.g. Kampong Cham, Siem Reap"
                         value={place}
                         onChange={(e) => setPlace(e.target.value)}
                       />
+                      <span className={`char-counter ${place.length >= 90 ? 'is-near-limit' : ''}`}>
+                        {place.length} / 100
+                      </span>
                     </div>
                   </div>
 
@@ -565,11 +612,15 @@ export default function ContributePage() {
                     <input
                       id="entry-still-believed"
                       type="text"
+                      maxLength={200}
                       className="auth-input"
                       placeholder="e.g. Yes, elders still observe this."
                       value={stillBelieved}
                       onChange={(e) => setStillBelieved(e.target.value)}
                     />
+                    <span className={`char-counter ${stillBelieved.length >= 180 ? 'is-near-limit' : ''}`}>
+                      {stillBelieved.length} / 200
+                    </span>
                   </div>
                 </div>
 
@@ -583,7 +634,7 @@ export default function ContributePage() {
                   <div className="auth-field" style={{ marginBottom: 0 }}>
                     <label className="auth-label">
                       <span>
-                        Photo Upload {!editId && <span className="auth-required">*</span>}
+                        Photo Upload <span style={{ fontSize: '11px', color: 'var(--ink-muted)', fontWeight: 400 }}>(Optional / ជម្រើសបន្ថែម)</span>
                       </span>
                       <span className="auth-label-km">រូបថត (JPG, PNG, WebP, max 5MB)</span>
                     </label>

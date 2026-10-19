@@ -233,6 +233,31 @@ export default function EntryDetailModal({ entry, onClose, shareHref }) {
         </div>
 
         <div className="modal-body">
+          {entry.photo_url ? (
+            <div className="modal-photo" style={{ margin: '8px 0 16px', textAlign: 'center' }}>
+              <img
+                src={entry.photo_url}
+                alt={entry.title}
+                style={{
+                  maxWidth: '100%',
+                  maxHeight: '320px',
+                  objectFit: 'cover',
+                  borderRadius: '12px',
+                  border: '1px solid var(--border-subtle)'
+                }}
+              />
+            </div>
+          ) : (
+            <div className="modal-photo-placeholder" aria-hidden="true" style={{ margin: '8px 0 16px' }}>
+              <div className="modal-photo-placeholder-inner">
+                <ThemeVibeIcon motif={motif} size={48} />
+                <span className="modal-photo-placeholder-label">
+                  {meta.labelKm} — {meta.labelEn}
+                </span>
+              </div>
+            </div>
+          )}
+
           <div className="modal-heading">
             <div className="modal-title-row">
               <span className="modal-title-motif" aria-hidden="true">
@@ -247,22 +272,6 @@ export default function EntryDetailModal({ entry, onClose, shareHref }) {
             </div>
             <h3 className="modal-title">{entry.title}</h3>
           </div>
-
-          {entry.photo_url && (
-            <div className="modal-photo" style={{ margin: '16px 0', textAlign: 'center' }}>
-              <img
-                src={entry.photo_url}
-                alt={entry.title}
-                style={{
-                  maxWidth: '100%',
-                  maxHeight: '320px',
-                  objectFit: 'cover',
-                  borderRadius: '12px',
-                  border: '1px solid var(--border-subtle)'
-                }}
-              />
-            </div>
-          )}
 
           <KbachDivider />
 

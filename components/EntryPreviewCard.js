@@ -33,6 +33,25 @@ export default function EntryPreviewCard({
           <span className="entry-card-badge-en">{badge.labelEn}</span>
         </div>
 
+        {photoPreviewUrl ? (
+          <div className="entry-card-photo" style={{ margin: '10px 0 12px', borderRadius: '10px', overflow: 'hidden', border: '1px solid var(--border-subtle)' }}>
+            <img
+              src={photoPreviewUrl}
+              alt="Preview"
+              style={{ width: '100%', height: '160px', objectFit: 'cover', display: 'block' }}
+            />
+          </div>
+        ) : (
+          <div className="entry-card-photo-placeholder" style={{ margin: '10px 0 12px' }} aria-hidden="true">
+            <div className="photo-placeholder-inner">
+              <ThemeVibeIcon motif={motif} size={32} />
+              <span className="photo-placeholder-text">
+                {badge.labelKm} • {badge.labelEn}
+              </span>
+            </div>
+          </div>
+        )}
+
         <div className="entry-card-banner">
           <div className="entry-card-banner-main">
             <span className="entry-card-medallion" aria-hidden="true">
@@ -43,16 +62,6 @@ export default function EntryPreviewCard({
             </span>
           </div>
         </div>
-
-        {photoPreviewUrl && (
-          <div className="entry-card-photo" style={{ margin: '12px 0 4px', borderRadius: '10px', overflow: 'hidden', border: '1px solid var(--border-subtle)' }}>
-            <img
-              src={photoPreviewUrl}
-              alt="Preview"
-              style={{ width: '100%', height: '160px', objectFit: 'cover', display: 'block' }}
-            />
-          </div>
-        )}
 
         <h4 className="entry-card-title">{title || 'Entry Title (English)...'}</h4>
 
