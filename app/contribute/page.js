@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import SiteNav from '../../components/SiteNav';
@@ -8,6 +8,7 @@ import ThemeAtmosphereBackdrop from '../../components/ThemeAtmosphereBackdrop';
 import { useTheme } from '../../components/ThemeProvider';
 import { ThemeVibeIcon } from '../../components/KbachMotifs';
 import EntryPreviewCard from '../../components/EntryPreviewCard';
+import ImageCropper from '../../components/ImageCropper';
 import { createClient } from '../../lib/supabase/client';
 
 const CATEGORY_OPTIONS = [
@@ -49,6 +50,13 @@ export default function ContributePage() {
   const [photoFile, setPhotoFile] = useState(null);
   const [existingPhotoUrl, setExistingPhotoUrl] = useState('');
   const [photoPreviewUrl, setPhotoPreviewUrl] = useState('');
+  // The untouched upload is kept so re-cropping always re-reads the original
+  // pixels rather than compounding loss from the previous crop.
+  const [originalPhotoFile, setOriginalPhotoFile] = useState(null);
+  const [cropSource, setCropSource] = useState(null);
+  // Rotation and selection from the last Apply, so reopening the cropper
+  // resumes where the contributor left off rather than resetting.
+  const [photoAdjustment, setPhotoAdjustment] = useState(null);
 
   // Status & errors
   const [fieldErrors, setFieldErrors] = useState({});
@@ -128,15 +136,70 @@ export default function ContributePage() {
     loadEditEntry();
   }, [editId, user]);
 
-  const handlePhotoSelect = (file) => {
-    setPhotoFile(file);
-    if (file) {
-      const tempUrl = URL.createObjectURL(file);
-      setPhotoPreviewUrl(tempUrl);
-    } else {
-      setPhotoPreviewUrl(existingPhotoUrl);
-    }
+  // Preview URLs are object URLs for freshly picked files and plain https URLs
+  // for an entry being edited; only the former need revoking.
+  const setPreview = (nextUrl) => {
+    setPhotoPreviewUrl((prev) => {
+      if (prev && prev.startsWith('blob:') && prev !== nextUrl) {
+        URL.revokeObjectURL(prev);
+      }
+      return nextUrl;
+    });
   };
+
+  // Format and size are checked before the cropper opens: there is no point
+  // framing an image the upload would reject anyway.
+  const handlePhotoSelect = (file) => {
+    if (!file) {
+      setPhotoFile(null);
+      setOriginalPhotoFile(null);
+      setPreview(existingPhotoUrl);
+      return;
+    }
+
+    if (!ALLOWED_MIME_TYPES.includes(file.type)) {
+      setFieldErrors((prev) => ({ ...prev, photo: 'Only JPEG, PNG, and WebP images are allowed.' }));
+      return;
+    }
+    if (file.size > MAX_FILE_SIZE) {
+      setFieldErrors((prev) => ({ ...prev, photo: 'Photo file size must not exceed 5 MB.' }));
+      return;
+    }
+
+    setFieldErrors((prev) => ({ ...prev, photo: '' }));
+    setOriginalPhotoFile(file);
+    // A different photo starts from a clean slate.
+    setPhotoAdjustment(null);
+    setCropSource(file);
+  };
+
+  const handleCropApply = (croppedFile, adjustment) => {
+    setPhotoFile(croppedFile);
+    setPreview(URL.createObjectURL(croppedFile));
+    setPhotoAdjustment(adjustment);
+    setCropSource(null);
+    setFieldErrors((prev) => ({ ...prev, photo: '' }));
+  };
+
+  // Backing out of the cropper leaves whatever photo was already attached.
+  const handleCropCancel = () => setCropSource(null);
+
+  const handleRecrop = () => {
+    if (originalPhotoFile) setCropSource(originalPhotoFile);
+  };
+
+  const handleRemovePhoto = () => {
+    setPhotoFile(null);
+    setOriginalPhotoFile(null);
+    setPhotoAdjustment(null);
+    setExistingPhotoUrl('');
+    setPreview('');
+  };
+
+  // The paste listener is bound once, so it reads the current handler through
+  // a ref rather than capturing the first render's closure.
+  const photoSelectRef = useRef(handlePhotoSelect);
+  photoSelectRef.current = handlePhotoSelect;
 
   // Clipboard paste support (Ctrl+V)
   useEffect(() => {
@@ -150,10 +213,7 @@ export default function ContributePage() {
           const file = item.getAsFile();
           if (file) {
             e.preventDefault();
-            setPhotoFile(file);
-            const tempUrl = URL.createObjectURL(file);
-            setPhotoPreviewUrl(tempUrl);
-            setFieldErrors((prev) => ({ ...prev, photo: '' }));
+            photoSelectRef.current(file);
             break;
           }
         }
@@ -169,9 +229,7 @@ export default function ContributePage() {
   const handleDrop = (e) => {
     e.preventDefault();
     if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-      const file = e.dataTransfer.files[0];
-      handlePhotoSelect(file);
-      setFieldErrors((prev) => ({ ...prev, photo: '' }));
+      handlePhotoSelect(e.dataTransfer.files[0]);
     }
   };
 
@@ -657,9 +715,48 @@ export default function ContributePage() {
                         type="file"
                         accept="image/jpeg,image/png,image/webp"
                         style={{ display: 'none' }}
-                        onChange={(e) => handlePhotoSelect(e.target.files[0] || null)}
+                        // Cleared on every pick so choosing the same file twice
+                        // still fires a change event and reopens the cropper.
+                        onChange={(e) => {
+                          handlePhotoSelect(e.target.files[0] || null);
+                          e.target.value = '';
+                        }}
                       />
                     </label>
+
+                    {photoPreviewUrl && (
+                      <div className="photo-attached">
+                        <div className="photo-attached-thumb">
+                          <img src={photoPreviewUrl} alt="Attached photo preview" />
+                        </div>
+                        <div className="photo-attached-body">
+                          <p className="photo-attached-name">
+                            {photoFile ? photoFile.name : 'Current photo'}
+                          </p>
+                          <p className="photo-attached-meta">
+                            {photoFile
+                              ? `Cropped to 16:9 • ${(photoFile.size / 1024).toFixed(0)} KB`
+                              : 'Saved with this entry'}
+                          </p>
+                          <div className="photo-attached-actions">
+                            {originalPhotoFile && (
+                              <button type="button" className="modal-share" onClick={handleRecrop}>
+                                <ThemeVibeIcon motif="crown" size={12} />
+                                <span>Crop &amp; adjust</span>
+                              </button>
+                            )}
+                            <button
+                              type="button"
+                              className="modal-share photo-attached-remove"
+                              onClick={handleRemovePhoto}
+                            >
+                              <span>Remove</span>
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
                     {fieldErrors.photo && (
                       <p className="auth-field-error">{fieldErrors.photo}</p>
                     )}
@@ -715,6 +812,15 @@ export default function ContributePage() {
           )}
         </main>
       </div>
+
+      {cropSource && (
+        <ImageCropper
+          file={cropSource}
+          initialAdjustment={photoAdjustment}
+          onCancel={handleCropCancel}
+          onApply={handleCropApply}
+        />
+      )}
     </div>
   );
 }
