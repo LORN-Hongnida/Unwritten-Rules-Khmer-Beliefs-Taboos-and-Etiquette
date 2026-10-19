@@ -14,17 +14,31 @@ export default function EntryOwnerActions({ entryId, ownerId, entryTitle = 'this
 
   useEffect(() => {
     let isMounted = true;
+    const supabase = createClient();
+
     async function fetchUser() {
       try {
-        const supabase = createClient();
-        const { data: { user } } = await supabase.auth.getUser();
+        const { data: { user }, error } = await supabase.auth.getUser();
+        // A failed lookup and a non-owner both render nothing, so without this
+        // an auth problem is invisible.
+        if (error) console.error('Could not resolve the signed-in user:', error);
         if (isMounted) setCurrentUser(user);
-      } catch {
-        // Ignore auth error
+      } catch (err) {
+        console.error('Could not resolve the signed-in user:', err);
       }
     }
     fetchUser();
-    return () => { isMounted = false; };
+
+    // The modal often mounts long after sign-in; this keeps the owner controls
+    // in step with a session that refreshes or changes while it is open.
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (isMounted) setCurrentUser(session?.user ?? null);
+    });
+
+    return () => {
+      isMounted = false;
+      subscription?.unsubscribe();
+    };
   }, []);
 
   if (!currentUser || !ownerId || currentUser.id !== ownerId) {
@@ -78,7 +92,7 @@ export default function EntryOwnerActions({ entryId, ownerId, entryTitle = 'this
             cursor: 'pointer'
           }}
         >
-          Edit Entry / កែប្រែ
+          Edit Entry / <span className="btn-label-km" lang="km">កែប្រែ</span>
         </Link>
         <button
           type="button"
@@ -96,7 +110,7 @@ export default function EntryOwnerActions({ entryId, ownerId, entryTitle = 'this
             cursor: deleting ? 'not-allowed' : 'pointer'
           }}
         >
-          Delete / លុប
+          Delete / <span className="btn-label-km" lang="km">លុប</span>
         </button>
       </div>
 
