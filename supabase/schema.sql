@@ -73,7 +73,27 @@ ALTER TABLE public.entries DROP CONSTRAINT IF EXISTS entries_title_km_check;
 ALTER TABLE public.entries ADD CONSTRAINT entries_title_km_check CHECK (char_length(trim(title_km)) >= 2 AND char_length(trim(title_km)) <= 150);
 
 ALTER TABLE public.entries DROP CONSTRAINT IF EXISTS entries_description_check;
-ALTER TABLE public.entries ADD CONSTRAINT entries_description_check CHECK (char_length(trim(description)) >= 10);
+ALTER TABLE public.entries ADD CONSTRAINT entries_description_check CHECK (char_length(trim(description)) >= 10 AND char_length(trim(description)) <= 1000);
+
+-- The optional columns had no bounds at all, so the form's limits were the only
+-- thing holding. Anyone posting straight to the API could store unbounded text;
+-- these mirror the form so the database is what actually refuses junk.
+ALTER TABLE public.entries DROP CONSTRAINT IF EXISTS entries_reason_check;
+ALTER TABLE public.entries ADD CONSTRAINT entries_reason_check CHECK (reason IS NULL OR char_length(trim(reason)) <= 1000);
+
+ALTER TABLE public.entries DROP CONSTRAINT IF EXISTS entries_still_believed_check;
+ALTER TABLE public.entries ADD CONSTRAINT entries_still_believed_check CHECK (still_believed IS NULL OR char_length(trim(still_believed)) <= 200);
+
+ALTER TABLE public.entries DROP CONSTRAINT IF EXISTS entries_place_check;
+ALTER TABLE public.entries ADD CONSTRAINT entries_place_check CHECK (place IS NULL OR char_length(trim(place)) <= 100);
+
+ALTER TABLE public.entries DROP CONSTRAINT IF EXISTS entries_contributor_check;
+ALTER TABLE public.entries ADD CONSTRAINT entries_contributor_check CHECK (contributor IS NULL OR char_length(trim(contributor)) <= 100);
+
+-- Photos must come from storage, not an arbitrary host: a free-text column
+-- lets an entry hotlink anywhere and point readers off-site.
+ALTER TABLE public.entries DROP CONSTRAINT IF EXISTS entries_photo_url_check;
+ALTER TABLE public.entries ADD CONSTRAINT entries_photo_url_check CHECK (photo_url IS NULL OR photo_url ~ '^https://[a-z0-9-]+\.supabase\.co/storage/v1/object/public/photos/');
 
 -- ============================================================
 -- 2.2 Storage Bucket and Policies (Part 0)
