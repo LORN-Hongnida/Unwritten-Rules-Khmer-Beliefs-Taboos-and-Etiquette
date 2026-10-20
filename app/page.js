@@ -18,7 +18,7 @@ const HOME_SAMPLE_SIZE = 6;
 
 export default function Home() {
   const { selectedTheme, setSelectedTheme, isDark, toggleMode } = useTheme();
-  const { entries } = useEntries();
+  const { entries, loading } = useEntries();
   const { openEntry, setOpenEntry, buildHref } = useEntryRoute(entries);
 
   const categoryCount = new Set(entries.map((entry) => entry.category)).size;
@@ -112,7 +112,16 @@ export default function Home() {
           </div>
 
           <div className="entries-grid">
-            {shownEntries.length > 0 ? (
+            {loading ? (
+              /* Until the fetch settles there is nothing to conclude: saying
+                 "no entries" would read as an empty archive. */
+              <div className="empty-state">
+                <p className="empty-state-title">Loading entries…</p>
+                <p className="empty-state-title-km" lang="km">
+                  កំពុងផ្ទុកកំណត់ត្រា…
+                </p>
+              </div>
+            ) : shownEntries.length > 0 ? (
               shownEntries.map((entry) => (
                 <EntryCard key={entry.id} entry={entry} onSelect={setOpenEntry} />
               ))

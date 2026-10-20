@@ -16,7 +16,7 @@ import useEntries from "../../components/useEntries";
 
 export default function BrowsePage() {
   const { selectedTheme, setSelectedTheme, isDark, toggleMode } = useTheme();
-  const { entries } = useEntries();
+  const { entries, loading } = useEntries();
   const { openEntry, setOpenEntry, buildHref } = useEntryRoute(entries);
 
   const router = useRouter();
@@ -124,7 +124,16 @@ export default function BrowsePage() {
           />
 
           <div className="entries-grid">
-            {filteredEntries.length > 0 ? (
+            {loading ? (
+              /* Until the fetch settles there is nothing to conclude: saying
+                 "no entries" would read as an empty archive. */
+              <div className="empty-state">
+                <p className="empty-state-title">Loading entries…</p>
+                <p className="empty-state-title-km" lang="km">
+                  កំពុងផ្ទុកកំណត់ត្រា…
+                </p>
+              </div>
+            ) : filteredEntries.length > 0 ? (
               filteredEntries.map((entry) => (
                 <EntryCard key={entry.id} entry={entry} onSelect={setOpenEntry} />
               ))
