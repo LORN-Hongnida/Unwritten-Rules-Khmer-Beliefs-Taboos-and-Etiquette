@@ -3845,6 +3845,12 @@ button:hover .kbach-micro {
   font-weight: 600;
 }
 
+/* Khmer half of a bilingual message (validation errors, form errors). */
+.msg-km {
+  font-family: var(--font-sans-khmer);
+  display: inline;
+}
+
 .modal-footer-close {
   /* Keeps Close hard right whether or not the owner controls render — the
      footer is space-between, so a lone child would otherwise sit left. */

@@ -9,6 +9,7 @@ import { useTheme } from '../../components/ThemeProvider';
 import { ThemeVibeIcon } from '../../components/KbachMotifs';
 import EntryPreviewCard from '../../components/EntryPreviewCard';
 import ImageCropper from '../../components/ImageCropper';
+import BilingualMessage from '../../components/BilingualMessage';
 import { createClient } from '../../lib/supabase/client';
 
 const CATEGORY_OPTIONS = [
@@ -19,6 +20,32 @@ const CATEGORY_OPTIONS = [
 
 const ALLOWED_MIME_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
 const MAX_FILE_SIZE = 5242880; // 5 MB
+
+// Messages live together rather than inline so the two languages stay in step:
+// an English string edited on its own would otherwise drift from its Khmer.
+const MESSAGES = {
+  titleRequired: { en: 'English title is required.', km: 'តម្រូវឱ្យមានចំណងជើងជាភាសាអង់គ្លេស។' },
+  titleLength: { en: 'Title must be between 3 and 150 characters.', km: 'ចំណងជើងត្រូវមានពី ៣ ទៅ ១៥០ តួអក្សរ។' },
+  titleKmRequired: { en: 'Khmer title is required.', km: 'តម្រូវឱ្យមានចំណងជើងជាភាសាខ្មែរ។' },
+  titleKmLength: { en: 'Khmer title must be between 2 and 150 characters.', km: 'ចំណងជើងខ្មែរត្រូវមានពី ២ ទៅ ១៥០ តួអក្សរ។' },
+  categoryRequired: { en: 'Please select a category.', km: 'សូមជ្រើសរើសប្រភេទ។' },
+  descriptionRequired: { en: 'Description is required.', km: 'តម្រូវឱ្យមានការពិពណ៌នា។' },
+  descriptionShort: { en: 'Description must be at least 10 characters long.', km: 'ការពិពណ៌នាត្រូវមានយ៉ាងតិច ១០ តួអក្សរ។' },
+  descriptionLong: { en: 'Description must not exceed 1000 characters.', km: 'ការពិពណ៌នាមិនត្រូវលើសពី ១០០០ តួអក្សរទេ។' },
+  reasonLong: { en: 'Practical origin must not exceed 1000 characters.', km: 'ប្រភពដើមជាក់ស្តែងមិនត្រូវលើសពី ១០០០ តួអក្សរទេ។' },
+  contributorLong: { en: 'Contributor name must not exceed 100 characters.', km: 'ឈ្មោះអ្នករួមចំណែកមិនត្រូវលើសពី ១០០ តួអក្សរទេ។' },
+  placeLong: { en: 'Place must not exceed 100 characters.', km: 'ទីកន្លែងមិនត្រូវលើសពី ១០០ តួអក្សរទេ។' },
+  stillBelievedLong: { en: 'Still believed status must not exceed 200 characters.', km: 'ស្ថានភាពជំនឿមិនត្រូវលើសពី ២០០ តួអក្សរទេ។' },
+  photoType: { en: 'Only JPEG, PNG, and WebP images are allowed.', km: 'អនុញ្ញាតតែរូបភាព JPEG, PNG និង WebP ប៉ុណ្ណោះ។' },
+  photoSize: { en: 'Photo file size must not exceed 5 MB.', km: 'ទំហំរូបថតមិនត្រូវលើសពី ៥ MB ទេ។' },
+  loadEditFailed: { en: 'Could not load entry for editing.', km: 'មិនអាចផ្ទុកទិន្នន័យដើម្បីកែប្រែបានទេ។' },
+  notOwner: { en: "You don't have permission to edit this entry.", km: 'អ្នកគ្មានសិទ្ធិកែប្រែទិន្នន័យនេះទេ។' },
+  mustLogIn: { en: 'You must be logged in to contribute.', km: 'អ្នកត្រូវចូលគណនីជាមុនសិន ដើម្បីរួមចំណែក។' },
+  uploadFailed: { en: 'Failed to upload photo. Please check the image format and size (max 5MB).', km: 'មិនអាចផ្ទុករូបថតបានទេ។ សូមពិនិត្យទម្រង់ និងទំហំរូបភាព (អតិបរមា ៥MB)។' },
+  updateFailed: { en: "That change wasn't saved.", km: 'ការកែប្រែមិនបានរក្សាទុកទេ។' },
+  saveFailed: { en: 'Failed to save entry. Please try again.', km: 'មិនអាចរក្សាទុកទិន្នន័យបានទេ។ សូមព្យាយាមម្តងទៀត។' },
+  unexpected: { en: 'An unexpected error occurred while saving.', km: 'មានបញ្ហាមិននឹកស្មានក្នុងពេលរក្សាទុក។' },
+};
 
 function getFileExtension(filename) {
   const parts = filename.split('.');
@@ -60,7 +87,7 @@ export default function ContributePage() {
 
   // Status & errors
   const [fieldErrors, setFieldErrors] = useState({});
-  const [formError, setFormError] = useState('');
+  const [formError, setFormError] = useState(null);
   const [loading, setLoading] = useState(false);
   const [fetchingEdit, setFetchingEdit] = useState(false);
 
@@ -103,14 +130,14 @@ export default function ContributePage() {
 
         if (error || !data) {
           console.error('Failed to load entry for editing:', error);
-          if (isMounted) setFormError('Could not load entry for editing.');
+          if (isMounted) setFormError(MESSAGES.loadEditFailed);
           return;
         }
 
         // Security check: must be owner to edit
         if (data.owner !== user.id) {
           console.error('Unauthorized edit attempt: user is not owner');
-          if (isMounted) setFormError("You don't have permission to edit this entry.");
+          if (isMounted) setFormError(MESSAGES.notOwner);
           return;
         }
 
@@ -158,11 +185,11 @@ export default function ContributePage() {
     }
 
     if (!ALLOWED_MIME_TYPES.includes(file.type)) {
-      setFieldErrors((prev) => ({ ...prev, photo: 'Only JPEG, PNG, and WebP images are allowed.' }));
+      setFieldErrors((prev) => ({ ...prev, photo: MESSAGES.photoType }));
       return;
     }
     if (file.size > MAX_FILE_SIZE) {
-      setFieldErrors((prev) => ({ ...prev, photo: 'Photo file size must not exceed 5 MB.' }));
+      setFieldErrors((prev) => ({ ...prev, photo: MESSAGES.photoSize }));
       return;
     }
 
@@ -244,51 +271,51 @@ export default function ContributePage() {
     const trimmedStillBelieved = stillBelieved.trim();
 
     if (!trimmedTitle) {
-      errors.title = 'English title is required.';
+      errors.title = MESSAGES.titleRequired;
     } else if (trimmedTitle.length < 3 || trimmedTitle.length > 150) {
-      errors.title = 'Title must be between 3 and 150 characters.';
+      errors.title = MESSAGES.titleLength;
     }
 
     if (!trimmedTitleKm) {
-      errors.titleKm = 'Khmer title (ចំណងជើងភាសាខ្មែរ) is required.';
+      errors.titleKm = MESSAGES.titleKmRequired;
     } else if (trimmedTitleKm.length < 2 || trimmedTitleKm.length > 150) {
-      errors.titleKm = 'Khmer title must be between 2 and 150 characters.';
+      errors.titleKm = MESSAGES.titleKmLength;
     }
 
     if (!category) {
-      errors.category = 'Please select a category.';
+      errors.category = MESSAGES.categoryRequired;
     }
 
     if (!trimmedDesc) {
-      errors.description = 'Description is required.';
+      errors.description = MESSAGES.descriptionRequired;
     } else if (trimmedDesc.length < 10) {
-      errors.description = 'Description must be at least 10 characters long.';
+      errors.description = MESSAGES.descriptionShort;
     } else if (trimmedDesc.length > 1000) {
-      errors.description = 'Description must not exceed 1000 characters.';
+      errors.description = MESSAGES.descriptionLong;
     }
 
     if (trimmedReason.length > 1000) {
-      errors.reason = 'Practical origin must not exceed 1000 characters.';
+      errors.reason = MESSAGES.reasonLong;
     }
 
     if (trimmedContributor.length > 100) {
-      errors.contributor = 'Contributor name must not exceed 100 characters.';
+      errors.contributor = MESSAGES.contributorLong;
     }
 
     if (trimmedPlace.length > 100) {
-      errors.place = 'Place must not exceed 100 characters.';
+      errors.place = MESSAGES.placeLong;
     }
 
     if (trimmedStillBelieved.length > 200) {
-      errors.stillBelieved = 'Still believed status must not exceed 200 characters.';
+      errors.stillBelieved = MESSAGES.stillBelievedLong;
     }
 
     // Photo is optional: validate only if a file is provided
     if (photoFile) {
       if (!ALLOWED_MIME_TYPES.includes(photoFile.type)) {
-        errors.photo = 'Only JPEG, PNG, and WebP images are allowed.';
+        errors.photo = MESSAGES.photoType;
       } else if (photoFile.size > MAX_FILE_SIZE) {
-        errors.photo = 'Photo file size must not exceed 5 MB.';
+        errors.photo = MESSAGES.photoSize;
       }
     }
 
@@ -297,7 +324,7 @@ export default function ContributePage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setFormError('');
+    setFormError(null);
     const errors = validateForm();
     setFieldErrors(errors);
 
@@ -306,7 +333,7 @@ export default function ContributePage() {
     }
 
     if (!user) {
-      setFormError('You must be logged in to contribute.');
+      setFormError(MESSAGES.mustLogIn);
       return;
     }
 
@@ -333,7 +360,7 @@ export default function ContributePage() {
 
         if (uploadError) {
           console.error('Storage upload failed:', uploadError);
-          setFormError('Failed to upload photo. Please check the image format and size (max 5MB).');
+          setFormError(MESSAGES.uploadFailed);
           setLoading(false);
           return;
         }
@@ -370,7 +397,7 @@ export default function ContributePage() {
 
         if (error || !data || data.length === 0) {
           console.error('Update refused or failed:', error);
-          setFormError("That change wasn't saved.");
+          setFormError(MESSAGES.updateFailed);
           setLoading(false);
           return;
         }
@@ -385,7 +412,7 @@ export default function ContributePage() {
 
         if (error || !data || data.length === 0) {
           console.error('Insert refused or failed:', error);
-          setFormError('Failed to save entry. Please try again.');
+          setFormError(MESSAGES.saveFailed);
           setLoading(false);
           return;
         }
@@ -395,7 +422,7 @@ export default function ContributePage() {
       }
     } catch (err) {
       console.error('Unexpected error during submission:', err);
-      setFormError('An unexpected error occurred while saving.');
+      setFormError(MESSAGES.unexpected);
       setLoading(false);
     }
   };
@@ -480,7 +507,11 @@ export default function ContributePage() {
             </p>
           </div>
 
-          {formError && <div className="auth-error" style={{ marginBottom: '24px' }}>{formError}</div>}
+          {formError && (
+            <div className="auth-error" style={{ marginBottom: '24px' }}>
+              <BilingualMessage en={formError.en} km={formError.km} />
+            </div>
+          )}
 
           {fetchingEdit ? (
             <div className="contribute-card" style={{ textAlign: 'center', padding: '40px' }}>
@@ -518,7 +549,7 @@ export default function ContributePage() {
                       ))}
                     </div>
                     {fieldErrors.category && (
-                      <p className="auth-field-error">{fieldErrors.category}</p>
+                      <p className="auth-field-error"><BilingualMessage en={fieldErrors.category.en} km={fieldErrors.category.km} /></p>
                     )}
                   </div>
 
@@ -543,7 +574,7 @@ export default function ContributePage() {
                         {titleKm.length} / 150
                       </span>
                       {fieldErrors.titleKm && (
-                        <p className="auth-field-error">{fieldErrors.titleKm}</p>
+                        <p className="auth-field-error"><BilingualMessage en={fieldErrors.titleKm.en} km={fieldErrors.titleKm.km} /></p>
                       )}
                     </div>
 
@@ -565,7 +596,7 @@ export default function ContributePage() {
                         {title.length} / 150
                       </span>
                       {fieldErrors.title && (
-                        <p className="auth-field-error">{fieldErrors.title}</p>
+                        <p className="auth-field-error"><BilingualMessage en={fieldErrors.title.en} km={fieldErrors.title.km} /></p>
                       )}
                     </div>
                   </div>
@@ -596,7 +627,7 @@ export default function ContributePage() {
                       {description.length} / 1000
                     </span>
                     {fieldErrors.description && (
-                      <p className="auth-field-error">{fieldErrors.description}</p>
+                      <p className="auth-field-error"><BilingualMessage en={fieldErrors.description.en} km={fieldErrors.description.km} /></p>
                     )}
                   </div>
 
@@ -618,7 +649,7 @@ export default function ContributePage() {
                       {reason.length} / 1000
                     </span>
                     {fieldErrors.reason && (
-                      <p className="auth-field-error">{fieldErrors.reason}</p>
+                      <p className="auth-field-error"><BilingualMessage en={fieldErrors.reason.en} km={fieldErrors.reason.km} /></p>
                     )}
                   </div>
 
@@ -640,6 +671,9 @@ export default function ContributePage() {
                       <span className={`char-counter ${contributor.length >= 90 ? 'is-near-limit' : ''}`}>
                         {contributor.length} / 100
                       </span>
+                      {fieldErrors.contributor && (
+                        <p className="auth-field-error"><BilingualMessage en={fieldErrors.contributor.en} km={fieldErrors.contributor.km} /></p>
+                      )}
                     </div>
 
                     <div className="auth-field">
@@ -659,6 +693,9 @@ export default function ContributePage() {
                       <span className={`char-counter ${place.length >= 90 ? 'is-near-limit' : ''}`}>
                         {place.length} / 100
                       </span>
+                      {fieldErrors.place && (
+                        <p className="auth-field-error"><BilingualMessage en={fieldErrors.place.en} km={fieldErrors.place.km} /></p>
+                      )}
                     </div>
                   </div>
 
@@ -679,6 +716,9 @@ export default function ContributePage() {
                     <span className={`char-counter ${stillBelieved.length >= 180 ? 'is-near-limit' : ''}`}>
                       {stillBelieved.length} / 200
                     </span>
+                    {fieldErrors.stillBelieved && (
+                      <p className="auth-field-error"><BilingualMessage en={fieldErrors.stillBelieved.en} km={fieldErrors.stillBelieved.km} /></p>
+                    )}
                   </div>
                 </div>
 
@@ -758,7 +798,7 @@ export default function ContributePage() {
                     )}
 
                     {fieldErrors.photo && (
-                      <p className="auth-field-error">{fieldErrors.photo}</p>
+                      <p className="auth-field-error"><BilingualMessage en={fieldErrors.photo.en} km={fieldErrors.photo.km} /></p>
                     )}
                   </div>
                 </div>
