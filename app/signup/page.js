@@ -8,6 +8,43 @@ import ThemeAtmosphereBackdrop from '../../components/ThemeAtmosphereBackdrop';
 import { useTheme } from '../../components/ThemeProvider';
 import { ThemeVibeIcon } from '../../components/KbachMotifs';
 import { createClient } from '../../lib/supabase/client';
+import BilingualMessage from '../../components/BilingualMessage';
+
+// The door into the archive, in both languages. Until now this page spoke only
+// English, so the first screen a Khmer reader met was the one screen that
+// couldn't speak to them.
+const MESSAGES = {
+  emailRequired: { en: 'Email address is required.', km: 'ត្រូវការអាសយដ្ឋានអ៊ីមែល។' },
+  emailInvalid: { en: 'Email address is invalid.', km: 'អាសយដ្ឋានអ៊ីមែលមិនត្រឹមត្រូវទេ។' },
+  passwordRequired: { en: 'Password is required.', km: 'ត្រូវការពាក្យសម្ងាត់។' },
+  // Length only. The old rule also demanded a Latin letter and a digit, which
+  // no Khmer keyboard can satisfy: it locked out the very people this archive
+  // is about. Length is the part that actually resists guessing.
+  passwordShort: { en: 'Password must be at least 8 characters long.', km: 'ពាក្យសម្ងាត់ត្រូវមានយ៉ាងតិច ៨ តួអក្សរ។' },
+  confirmRequired: { en: 'Please confirm your password.', km: 'សូមផ្ទៀងផ្ទាត់ពាក្យសម្ងាត់របស់អ្នក។' },
+  confirmMismatch: { en: 'Passwords do not match.', km: 'ពាក្យសម្ងាត់មិនដូចគ្នាទេ។' },
+  checkInbox: {
+    en: 'Account created. Please check your inbox for a confirmation link, then sign in.',
+    km: 'បានបង្កើតគណនី។ សូមពិនិត្យប្រអប់សំបុត្ររបស់អ្នករកតំណភ្ជាប់ផ្ទៀងផ្ទាត់ បន្ទាប់មកចូលគណនី។',
+  },
+};
+
+// Supabase speaks English and speaks to developers. Its codes are stable, so
+// they are translated here; the raw message goes to the console, not to a
+// contributor.
+const AUTH_ERRORS = {
+  user_already_exists: { en: 'An account with this email already exists. Try signing in instead.', km: 'មានគណនីជាមួយអ៊ីមែលនេះរួចហើយ។ សូមព្យាយាមចូលគណនីជំនួសវិញ។' },
+  email_exists: { en: 'An account with this email already exists. Try signing in instead.', km: 'មានគណនីជាមួយអ៊ីមែលនេះរួចហើយ។ សូមព្យាយាមចូលគណនីជំនួសវិញ។' },
+  weak_password: { en: 'That password is too easy to guess. Please choose a longer one.', km: 'ពាក្យសម្ងាត់នេះងាយស្រួលទាយពេក។ សូមជ្រើសរើសមួយវែងជាងនេះ។' },
+  validation_failed: { en: 'Please check the email address and try again.', km: 'សូមពិនិត្យអាសយដ្ឋានអ៊ីមែល ហើយព្យាយាមម្តងទៀត។' },
+  over_request_rate_limit: { en: 'Too many attempts. Please wait a moment and try again.', km: 'ព្យាយាមច្រើនដងពេក។ សូមរង់ចាំមួយសន្ទុះ ហើយព្យាយាមម្តងទៀត។' },
+  unknown: { en: 'Could not create your account. Please try again.', km: 'មិនអាចបង្កើតគណនីរបស់អ្នកបានទេ។ សូមព្យាយាមម្តងទៀត។' },
+};
+
+function authErrorMessage(error) {
+  console.error('Sign-up failed:', error);
+  return AUTH_ERRORS[error?.code] || AUTH_ERRORS.unknown;
+}
 
 function EyeIcon() {
   return (
@@ -29,22 +66,22 @@ function EyeOffIcon() {
 
 function getEmailError(val) {
   const trimmed = val.trim();
-  if (!trimmed) return 'Email address is required.';
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed)) return 'Email address is invalid.';
+  if (!trimmed) return MESSAGES.emailRequired;
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed)) return MESSAGES.emailInvalid;
   return '';
 }
 
+// Counted in code points, not UTF-16 units: a Khmer syllable is often several
+// units long, and val.length would quietly inflate it.
 function getPasswordError(val) {
-  if (!val) return 'Password is required';
-  if (val.length < 8 || !/(?=.*[A-Za-z])(?=.*\d)/.test(val)) {
-    return 'Password must be at least 8 characters long and contain both letters and numbers';
-  }
+  if (!val) return MESSAGES.passwordRequired;
+  if ([...val].length < 8) return MESSAGES.passwordShort;
   return '';
 }
 
 function getConfirmPasswordError(confirmVal, passVal) {
-  if (!confirmVal) return 'Please confirm your password';
-  if (confirmVal !== passVal) return 'Passwords do not match';
+  if (!confirmVal) return MESSAGES.confirmRequired;
+  if (confirmVal !== passVal) return MESSAGES.confirmMismatch;
   return '';
 }
 
@@ -72,8 +109,8 @@ export default function SignupPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [fieldErrors, setFieldErrors] = useState({});
-  const [generalError, setGeneralError] = useState('');
-  const [successMessage, setSuccessMessage] = useState('');
+  const [generalError, setGeneralError] = useState(null);
+  const [successMessage, setSuccessMessage] = useState(null);
   const [hasSubmitted, setHasSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
 
@@ -148,8 +185,8 @@ export default function SignupPage() {
 
   const handleSignup = async (e) => {
     e.preventDefault();
-    setGeneralError('');
-    setSuccessMessage('');
+    setGeneralError(null);
+    setSuccessMessage(null);
     setHasSubmitted(true);
 
     const errors = validateSignup(email, password, confirmPassword);
@@ -169,13 +206,15 @@ export default function SignupPage() {
       });
 
       if (authError) {
-        setGeneralError(authError.message || 'Failed to create account');
+        setGeneralError(authErrorMessage(authError));
         setLoading(false);
         return;
       }
 
+      // A user with no session means Supabase is waiting on email confirmation.
+      // What the contributor needs is their next step, not my project settings.
       if (data?.user && !data?.session) {
-        setSuccessMessage('Account created successfully! If email confirmation is enabled in your Supabase project, please check your inbox to confirm your email before signing in. (If you want instant sign-in, turn off "Confirm email" in Supabase Auth settings).');
+        setSuccessMessage(MESSAGES.checkInbox);
         setLoading(false);
         return;
       }
@@ -183,7 +222,7 @@ export default function SignupPage() {
       router.push('/');
       router.refresh();
     } catch (err) {
-      setGeneralError(err?.message || 'Failed to create account');
+      setGeneralError(authErrorMessage(err));
       setLoading(false);
     }
   };
@@ -209,12 +248,23 @@ export default function SignupPage() {
               <h1 className="auth-title">បង្កើតគណនី</h1>
               <div className="auth-title-sub">Contributor Registration</div>
               <p className="auth-description">
-                Create an account to contribute and preserve Khmer cultural knowledge.
+                <BilingualMessage
+                  en="Create an account to contribute and preserve Khmer cultural knowledge."
+                  km="បង្កើតគណនីដើម្បីរួមចំណែក និងថែរក្សាចំណេះដឹងវប្បធម៌ខ្មែរ។"
+                />
               </p>
             </div>
 
-            {generalError && <div className="auth-error">{generalError}</div>}
-            {successMessage && <div className="auth-success">{successMessage}</div>}
+            {generalError && (
+              <div className="auth-error">
+                <BilingualMessage en={generalError.en} km={generalError.km} />
+              </div>
+            )}
+            {successMessage && (
+              <div className="auth-success">
+                <BilingualMessage en={successMessage.en} km={successMessage.km} />
+              </div>
+            )}
 
             <form className="auth-form" onSubmit={handleSignup} noValidate>
               <div className="auth-field">
@@ -235,7 +285,9 @@ export default function SignupPage() {
                   autoComplete="email"
                 />
                 {fieldErrors.email && (
-                  <p className="auth-field-error">{fieldErrors.email}</p>
+                  <p className="auth-field-error">
+                    <BilingualMessage en={fieldErrors.email.en} km={fieldErrors.email.km} />
+                  </p>
                 )}
               </div>
 
@@ -268,7 +320,9 @@ export default function SignupPage() {
                   </button>
                 </div>
                 {fieldErrors.password && (
-                  <p className="auth-field-error">{fieldErrors.password}</p>
+                  <p className="auth-field-error">
+                    <BilingualMessage en={fieldErrors.password.en} km={fieldErrors.password.km} />
+                  </p>
                 )}
               </div>
 
@@ -301,7 +355,12 @@ export default function SignupPage() {
                   </button>
                 </div>
                 {fieldErrors.confirmPassword && (
-                  <p className="auth-field-error">{fieldErrors.confirmPassword}</p>
+                  <p className="auth-field-error">
+                    <BilingualMessage
+                      en={fieldErrors.confirmPassword.en}
+                      km={fieldErrors.confirmPassword.km}
+                    />
+                  </p>
                 )}
               </div>
 
@@ -310,7 +369,7 @@ export default function SignupPage() {
                 className="auth-submit"
                 disabled={loading}
               >
-                {loading ? 'Creating account...' : 'Sign Up / បង្កើតគណនី'}
+                {loading ? 'Creating account... / កំពុងបង្កើតគណនី...' : 'Sign Up / បង្កើតគណនី'}
               </button>
             </form>
 

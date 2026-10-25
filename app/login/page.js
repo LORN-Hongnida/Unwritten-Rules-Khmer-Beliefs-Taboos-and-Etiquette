@@ -8,6 +8,31 @@ import ThemeAtmosphereBackdrop from '../../components/ThemeAtmosphereBackdrop';
 import { useTheme } from '../../components/ThemeProvider';
 import { ThemeVibeIcon } from '../../components/KbachMotifs';
 import { createClient } from '../../lib/supabase/client';
+import BilingualMessage from '../../components/BilingualMessage';
+
+// Every message a contributor can hit at the door, in both languages. The
+// archive itself has always been bilingual; these pages were not, which left
+// the one screen a Khmer reader meets first speaking only English.
+const MESSAGES = {
+  emailRequired: { en: 'Email address is required.', km: 'ត្រូវការអាសយដ្ឋានអ៊ីមែល។' },
+  emailInvalid: { en: 'Email address is invalid.', km: 'អាសយដ្ឋានអ៊ីមែលមិនត្រឹមត្រូវទេ។' },
+  passwordRequired: { en: 'Password is required.', km: 'ត្រូវការពាក្យសម្ងាត់។' },
+};
+
+// Supabase speaks English and speaks to developers. Its error codes are stable,
+// so they are translated here and the raw message goes to the console instead of
+// to the contributor.
+const AUTH_ERRORS = {
+  invalid_credentials: { en: 'That email and password do not match an account.', km: 'អ៊ីមែល និងពាក្យសម្ងាត់នេះមិនត្រូវនឹងគណនីណាមួយទេ។' },
+  email_not_confirmed: { en: 'Please confirm your email address first. Check your inbox for the link.', km: 'សូមផ្ទៀងផ្ទាត់អ៊ីមែលរបស់អ្នកជាមុន។ សូមពិនិត្យប្រអប់សំបុត្ររកតំណភ្ជាប់។' },
+  over_request_rate_limit: { en: 'Too many attempts. Please wait a moment and try again.', km: 'ព្យាយាមច្រើនដងពេក។ សូមរង់ចាំមួយសន្ទុះ ហើយព្យាយាមម្តងទៀត។' },
+  unknown: { en: 'Could not sign you in. Please try again.', km: 'មិនអាចចូលគណនីបានទេ។ សូមព្យាយាមម្តងទៀត។' },
+};
+
+function authErrorMessage(error) {
+  console.error('Sign-in failed:', error);
+  return AUTH_ERRORS[error?.code] || AUTH_ERRORS.unknown;
+}
 
 function EyeIcon() {
   return (
@@ -29,13 +54,13 @@ function EyeOffIcon() {
 
 function getEmailError(val) {
   const trimmed = val.trim();
-  if (!trimmed) return 'Email address is required.';
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed)) return 'Email address is invalid.';
+  if (!trimmed) return MESSAGES.emailRequired;
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed)) return MESSAGES.emailInvalid;
   return '';
 }
 
 function getPasswordError(val) {
-  if (!val) return 'Password is required';
+  if (!val) return MESSAGES.passwordRequired;
   return '';
 }
 
@@ -58,7 +83,7 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [fieldErrors, setFieldErrors] = useState({});
-  const [generalError, setGeneralError] = useState('');
+  const [generalError, setGeneralError] = useState(null);
   const [hasSubmitted, setHasSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
 
@@ -109,7 +134,7 @@ export default function LoginPage() {
 
   const handleLogin = async (e) => {
     e.preventDefault();
-    setGeneralError('');
+    setGeneralError(null);
     setHasSubmitted(true);
 
     const errors = validateLogin(email, password);
@@ -129,7 +154,7 @@ export default function LoginPage() {
       });
 
       if (authError) {
-        setGeneralError(authError.message || 'Invalid email or password');
+        setGeneralError(authErrorMessage(authError));
         setLoading(false);
         return;
       }
@@ -137,7 +162,7 @@ export default function LoginPage() {
       router.push('/');
       router.refresh();
     } catch (err) {
-      setGeneralError(err?.message || 'Invalid email or password');
+      setGeneralError(authErrorMessage(err));
       setLoading(false);
     }
   };
@@ -163,11 +188,18 @@ export default function LoginPage() {
               <h1 className="auth-title">ចូលគណនី</h1>
               <div className="auth-title-sub">Contributor Login</div>
               <p className="auth-description">
-                Sign in to manage cultural entries in the archive.
+                <BilingualMessage
+                  en="Sign in to manage cultural entries in the archive."
+                  km="ចូលគណនីដើម្បីគ្រប់គ្រងធាតុវប្បធម៌ក្នុងបណ្ណាល័យ។"
+                />
               </p>
             </div>
 
-            {generalError && <div className="auth-error">{generalError}</div>}
+            {generalError && (
+              <div className="auth-error">
+                <BilingualMessage en={generalError.en} km={generalError.km} />
+              </div>
+            )}
 
             <form className="auth-form" onSubmit={handleLogin} noValidate>
               <div className="auth-field">
@@ -188,7 +220,9 @@ export default function LoginPage() {
                   autoComplete="email"
                 />
                 {fieldErrors.email && (
-                  <p className="auth-field-error">{fieldErrors.email}</p>
+                  <p className="auth-field-error">
+                    <BilingualMessage en={fieldErrors.email.en} km={fieldErrors.email.km} />
+                  </p>
                 )}
               </div>
 
@@ -221,7 +255,9 @@ export default function LoginPage() {
                   </button>
                 </div>
                 {fieldErrors.password && (
-                  <p className="auth-field-error">{fieldErrors.password}</p>
+                  <p className="auth-field-error">
+                    <BilingualMessage en={fieldErrors.password.en} km={fieldErrors.password.km} />
+                  </p>
                 )}
               </div>
 
@@ -230,7 +266,7 @@ export default function LoginPage() {
                 className="auth-submit"
                 disabled={loading}
               >
-                {loading ? 'Signing in...' : 'Sign In / ចូលគណនី'}
+                {loading ? 'Signing in... / កំពុងចូល...' : 'Sign In / ចូលគណនី'}
               </button>
             </form>
 
