@@ -391,9 +391,16 @@ export default function ContributePage() {
       };
 
       if (editId) {
+        // A gate that opens once and stays open is not a gate: an edit to a
+        // published entry sends it back to review. Reviewers are the exception,
+        // and the update policy's WITH CHECK enforces the same rule, so without
+        // the pending status here the edit would simply be refused.
+        const { data: isReviewer, error: reviewerError } = await supabase.rpc('is_reviewer');
+        if (reviewerError) console.error('Could not check reviewer status:', reviewerError);
+
         const { data, error } = await supabase
           .from('entries')
-          .update(payload)
+          .update(isReviewer === true ? payload : { ...payload, status: 'pending' })
           .eq('id', editId)
           .eq('owner', user.id)
           .select();
@@ -405,7 +412,14 @@ export default function ContributePage() {
           return;
         }
 
-        router.push(`/browse?entry=${data[0].id}`);
+        // A non-reviewer's edit has just taken the entry out of the public
+        // archive, so sending them to it on /browse would show an empty page
+        // and read as a bug. /my-entries shows it waiting, which is the truth.
+        if (isReviewer === true) {
+          router.push(`/browse?entry=${data[0].id}`);
+        } else {
+          router.push('/my-entries');
+        }
         router.refresh();
       } else {
         const { data, error } = await supabase
