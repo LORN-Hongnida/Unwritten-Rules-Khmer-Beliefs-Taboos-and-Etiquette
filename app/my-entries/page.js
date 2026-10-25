@@ -159,6 +159,18 @@ export default function MyEntriesPage() {
                   <div style={{ marginBottom: '8px' }}>
                     <EntryStatusBadge status={entry.status} />
                   </div>
+                  {/* Only a returned entry carries a note, and a return without
+                      a reason is just a door closing. Plain text in a <p>: a
+                      reviewer's words are words, not markup. */}
+                  {entry.status === 'returned' && entry.review_note && (
+                    <p className="my-entry-note">
+                      <span className="my-entry-note-label" lang="km">
+                        សំណើពីអ្នកពិនិត្យ
+                      </span>
+                      <span className="my-entry-note-label">A note from the reviewer</span>
+                      {entry.review_note}
+                    </p>
+                  )}
                   <EntryCard entry={entry} onSelect={setOpenEntry} />
                 </div>
               ))

@@ -4762,6 +4762,33 @@ button:hover .kbach-micro {
   font-family: var(--font-sans-khmer);
 }
 
+/* A reviewer's note on a returned entry, on /my-entries. */
+.my-entry-note {
+  margin: 0 0 10px;
+  padding: 10px 12px;
+  border-left: 3px solid var(--krama-red, #a44a38);
+  border-radius: 0 8px 8px 0;
+  background-color: rgba(164, 74, 56, 0.08);
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--ink);
+}
+
+.my-entry-note-label {
+  display: block;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+}
+
+.my-entry-note-label[lang="km"] {
+  font-family: var(--font-sans-khmer);
+  text-transform: none;
+  letter-spacing: 0;
+}
+
 [data-mode="light"] .user-menu-logout {
   color: var(--krama-red-dark);
 }
