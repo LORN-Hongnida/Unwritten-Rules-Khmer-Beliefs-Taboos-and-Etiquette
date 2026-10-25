@@ -16,7 +16,9 @@ CREATE TABLE IF NOT EXISTS public.entries (
   place TEXT,
   contributor TEXT,
   photo_url TEXT,
-  status TEXT NOT NULL DEFAULT 'published' CHECK (status IN ('draft', 'pending', 'published', 'rejected'))
+  -- Defaults to 'pending': an entry joins the public archive only once a
+  -- reviewer moves it. See section 4, the review gate.
+  status TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'published', 'returned'))
 );
 
 -- Migration support for existing table instance
@@ -29,34 +31,142 @@ CREATE INDEX IF NOT EXISTS entries_status_idx ON public.entries (status);
 -- 2. Enable Row Level Security (RLS)
 ALTER TABLE public.entries ENABLE ROW LEVEL SECURITY;
 
--- Policy 1: Anyone can read published entries
+-- ============================================================
+-- 2.0 The review gate (Lab 10)
+--
+-- Run this subsection on its own against an existing database and it does the
+-- whole migration; it is what was pasted into the Supabase SQL Editor. It is
+-- wrapped in a transaction so a failure anywhere leaves the archive exactly as
+-- it was, and every statement is written to be safe to run twice.
+--
+-- This database was already ahead of the lab script: a `status` column existed
+-- with default 'published' and values ('draft','pending','published','rejected').
+-- So the column is migrated rather than added, and the unused 'draft' and
+-- 'rejected' are retired in favour of 'returned'.
+-- ============================================================
+
+BEGIN;
+
+-- The old constraint has to go before the rows are moved, or a value the new
+-- constraint allows could be refused by the old one mid-migration.
+ALTER TABLE public.entries DROP CONSTRAINT IF EXISTS entries_status_check;
+
+-- Everything already in the archive came from the curator and their named
+-- sources, so it is published. This also clears out any 'draft' or 'rejected'
+-- row before the narrower constraint arrives.
+UPDATE public.entries SET status = 'published' WHERE status <> 'published';
+
+ALTER TABLE public.entries ALTER COLUMN status SET DEFAULT 'pending';
+ALTER TABLE public.entries
+  ADD CONSTRAINT entries_status_check CHECK (status IN ('pending', 'published', 'returned'));
+
+-- A reviewer's note on a returned entry, so "sent back to you" can say why.
+ALTER TABLE public.entries ADD COLUMN IF NOT EXISTS review_note TEXT;
+ALTER TABLE public.entries DROP CONSTRAINT IF EXISTS entries_review_note_check;
+ALTER TABLE public.entries ADD CONSTRAINT entries_review_note_check
+  CHECK (review_note IS NULL OR char_length(trim(review_note)) <= 500);
+
+-- Who can review: a list only the SQL Editor can change. RLS is on with no
+-- policies at all, which means the API can neither read this table nor write to
+-- it. The only way onto the list is the dashboard.
+CREATE TABLE IF NOT EXISTS public.reviewers (
+  user_id UUID PRIMARY KEY REFERENCES auth.users (id)
+);
+ALTER TABLE public.reviewers ENABLE ROW LEVEL SECURITY;
+
+-- The curator's own UUID is inserted by hand in the SQL Editor. It is a real
+-- user identifier and does not belong in a public repository:
+--   insert into public.reviewers (user_id) values ('PASTE-YOUR-UUID-HERE')
+--     on conflict do nothing;
+
+-- A yes/no question any request can ask: am I a reviewer? SECURITY DEFINER so it
+-- can read the reviewers table on the caller's behalf without granting the
+-- caller any access to it.
+CREATE OR REPLACE FUNCTION public.is_reviewer()
+RETURNS BOOLEAN
+LANGUAGE sql
+STABLE
+SECURITY DEFINER
+SET search_path = ''
+AS $$
+  SELECT EXISTS (SELECT 1 FROM public.reviewers WHERE user_id = (SELECT auth.uid()));
+$$;
+
+-- The one door reviewers use. Because it is SECURITY DEFINER it checks
+-- everything itself: not a reviewer, or a decision nobody planned for, or an
+-- entry that is not waiting, and it refuses. It moves status and the note and
+-- nothing else, so a reviewer never gains permission to edit someone's words.
+-- `note` defaults to NULL, so two-argument calls still work.
+CREATE OR REPLACE FUNCTION public.review_entry(entry_id UUID, decision TEXT, note TEXT DEFAULT NULL)
+RETURNS BOOLEAN
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = ''
+AS $$
+begin
+  if not public.is_reviewer() then
+    return false;
+  end if;
+  if decision not in ('published', 'returned') then
+    return false;
+  end if;
+  update public.entries
+    -- A published entry must not carry a stale note from an earlier return.
+    set status = decision,
+        review_note = case when decision = 'returned' then note else null end
+    where id = entry_id and status = 'pending';
+  return found;
+end;
+$$;
+
+-- A CREATE OR REPLACE with a new signature is a new function and inherits none
+-- of the old grants, so these are restated every run.
+REVOKE EXECUTE ON FUNCTION public.review_entry(UUID, TEXT, TEXT) FROM public, anon;
+GRANT EXECUTE ON FUNCTION public.review_entry(UUID, TEXT, TEXT) TO authenticated;
+
+-- Policy 1: reading. Everyone sees published, owners see their own at any
+-- status, reviewers see everything.
+--
+-- This replaces two separate SELECT policies ("Public read published entries"
+-- and "Owners can view own entries"). Multiple SELECT policies OR together, so
+-- leaving the old pair in place alongside this one would have been a hole, not
+-- a redundancy.
 DROP POLICY IF EXISTS "Public read published entries" ON public.entries;
-CREATE POLICY "Public read published entries"
-  ON public.entries
-  FOR SELECT
-  USING (status = 'published');
-
--- Policy 1b: Owners can view their own entries regardless of status
 DROP POLICY IF EXISTS "Owners can view own entries" ON public.entries;
-CREATE POLICY "Owners can view own entries"
+DROP POLICY IF EXISTS "anyone can read published entries" ON public.entries;
+CREATE POLICY "anyone can read published entries"
   ON public.entries
   FOR SELECT
-  USING (auth.uid() = owner);
+  USING (
+    status = 'published'
+    OR (SELECT auth.uid()) = owner
+    OR (SELECT public.is_reviewer())
+  );
 
--- Policy 2: Authenticated users can insert their own entries
+-- Policy 2: adding. Your own entry, and it waits. An insert that names itself
+-- published is refused outright, which is why the form sends no status at all
+-- and lets the column default decide.
 DROP POLICY IF EXISTS "Contributors can insert entries" ON public.entries;
-CREATE POLICY "Contributors can insert entries"
+DROP POLICY IF EXISTS "owners add their own entries" ON public.entries;
+CREATE POLICY "owners add their own entries"
   ON public.entries
-  FOR INSERT
-  WITH CHECK (auth.uid() = owner);
+  FOR INSERT TO authenticated
+  WITH CHECK ((SELECT auth.uid()) = owner AND status = 'pending');
 
--- Policy 3: Owners can update their own entries
+-- Policy 3: editing. Your own entry, and an edit sends it back to review. A gate
+-- that opens once and stays open is not a gate. Reviewers keep theirs published.
 DROP POLICY IF EXISTS "Owners can update own entries" ON public.entries;
-CREATE POLICY "Owners can update own entries"
+DROP POLICY IF EXISTS "owners edit their own entries" ON public.entries;
+CREATE POLICY "owners edit their own entries"
   ON public.entries
-  FOR UPDATE
-  USING (auth.uid() = owner)
-  WITH CHECK (auth.uid() = owner);
+  FOR UPDATE TO authenticated
+  USING ((SELECT auth.uid()) = owner)
+  WITH CHECK (
+    (SELECT auth.uid()) = owner
+    AND (status = 'pending' OR (SELECT public.is_reviewer()))
+  );
+
+COMMIT;
 
 -- Policy 4: Owners can delete their own entries
 DROP POLICY IF EXISTS "Owners can delete own entries" ON public.entries;
