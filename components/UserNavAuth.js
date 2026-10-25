@@ -113,6 +113,22 @@ export default function UserNavAuth({ selectedTheme = 'all', onNavClick }) {
               </div>
             </div>
 
+            {/* Lives in this menu rather than NAV_LINKS because that list is a
+                module constant shown to everyone, and this page only means
+                anything to someone signed in. */}
+            <Link
+              href="/my-entries"
+              role="menuitem"
+              className="user-menu-link"
+              onClick={() => {
+                setIsOpen(false);
+                if (onNavClick) onNavClick();
+              }}
+            >
+              <span>My Entries</span>
+              <span lang="km">ធាតុរបស់ខ្ញុំ</span>
+            </Link>
+
             <button
               type="button"
               role="menuitem"

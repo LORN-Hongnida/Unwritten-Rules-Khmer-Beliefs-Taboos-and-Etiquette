@@ -4734,6 +4734,34 @@ button:hover .kbach-micro {
   background-color: rgba(164, 74, 56, 0.15);
 }
 
+/* Same shape as the logout row so the menu reads as one list, in the archive's
+   own ink rather than the red reserved for leaving. */
+.user-menu-link {
+  width: 100%;
+  padding: 8px 12px;
+  border-radius: 8px;
+  color: var(--ink);
+  font-family: var(--font-serif-title);
+  font-size: 13px;
+  font-weight: 600;
+  text-align: left;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  transition: background-color 0.2s ease;
+}
+
+.user-menu-link:hover {
+  background-color: rgba(201, 162, 39, 0.14);
+}
+
+/* The Latin face has no Khmer coverage, so the script would otherwise fall back
+   to whatever the system supplies and sit at a different weight and height. */
+.user-menu-link [lang="km"] {
+  font-family: var(--font-sans-khmer);
+}
+
 [data-mode="light"] .user-menu-logout {
   color: var(--krama-red-dark);
 }
