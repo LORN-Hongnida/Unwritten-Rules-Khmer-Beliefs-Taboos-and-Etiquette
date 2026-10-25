@@ -88,6 +88,7 @@ export default function ContributePage() {
   // Status & errors
   const [fieldErrors, setFieldErrors] = useState({});
   const [formError, setFormError] = useState(null);
+  const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
   const [fetchingEdit, setFetchingEdit] = useState(false);
 
@@ -384,7 +385,9 @@ export default function ContributePage() {
         place: place.trim() || null,
         contributor: contributor.trim() || null,
         photo_url: photoUrl || null,
-        status: 'published',
+        // No status. The column defaults to 'pending', and the insert policy
+        // refuses a row that names itself published, so sending one here would
+        // only turn a waiting entry into an error message.
       };
 
       if (editId) {
@@ -417,8 +420,10 @@ export default function ContributePage() {
           return;
         }
 
-        router.push(`/browse?entry=${data[0].id}`);
-        router.refresh();
+        // The entry is not in the archive yet, so sending the contributor to it
+        // would show them an empty page. They get told it is waiting instead.
+        setSubmitted(true);
+        setLoading(false);
       }
     } catch (err) {
       console.error('Unexpected error during submission:', err);
@@ -470,6 +475,76 @@ export default function ContributePage() {
               <Link href="/login" className="auth-submit" style={{ display: 'inline-block', textDecoration: 'none' }}>
                 Sign In to Contribute / ចូលគណនី
               </Link>
+            </div>
+          </main>
+        </div>
+      </div>
+    );
+  }
+
+  // Nothing is persisted between visits, so an empty form has to be made by
+  // hand: without this, the next contribution opens pre-filled with the one
+  // that was just submitted.
+  const handleContributeAnother = () => {
+    setTitle('');
+    setTitleKm('');
+    setCategory('beliefs');
+    setDescription('');
+    setReason('');
+    setStillBelieved('');
+    setPlace('');
+    setContributor('');
+    setPhotoFile(null);
+    setOriginalPhotoFile(null);
+    setExistingPhotoUrl('');
+    // setPreview rather than the raw setter, so the object URL is revoked.
+    setPreview('');
+    setPhotoAdjustment(null);
+    setFieldErrors({});
+    setFormError(null);
+    setSubmitted(false);
+  };
+
+  // What a contributor sees while their entry waits. It names the review step
+  // rather than leaving them to wonder why their entry is not in the archive,
+  // and points at /my-entries so the waiting is something they can check on.
+  if (submitted) {
+    return (
+      <div>
+        <ThemeAtmosphereBackdrop selectedTheme={selectedTheme} />
+        <div className="page-content">
+          <SiteNav
+            selectedTheme={selectedTheme}
+            onSelectTheme={setSelectedTheme}
+            isDark={isDark}
+            onToggleMode={toggleMode}
+          />
+          <main className="contribute-container">
+            <div className="contribute-card" style={{ textAlign: 'center', padding: '48px 24px', maxWidth: '560px', margin: '40px auto' }}>
+              <div className="auth-motif" aria-hidden="true" style={{ marginBottom: '12px' }}>
+                <ThemeVibeIcon motif="lantern" size={28} />
+              </div>
+              <h1 className="auth-title">អរគុណសម្រាប់ការរួមចំណែក</h1>
+              <div className="auth-title-sub">Thank you for sharing this</div>
+              <p className="auth-description" style={{ margin: '16px 0 8px' }} lang="km">
+                ធាតុរបស់អ្នកកំពុងរង់ចាំការពិនិត្យ មុនពេលចូលក្នុងបណ្ណាល័យសាធារណៈ។
+              </p>
+              <p className="auth-description" style={{ margin: '0 0 24px' }}>
+                Your entry is waiting to be reviewed before it joins the public archive.
+              </p>
+              <Link href="/my-entries" className="auth-submit" style={{ display: 'inline-block', textDecoration: 'none' }}>
+                មើលធាតុរបស់ខ្ញុំ / View my entries
+              </Link>
+              <div className="auth-footer" style={{ marginTop: '20px' }}>
+                <button
+                  type="button"
+                  className="auth-link"
+                  onClick={handleContributeAnother}
+                  style={{ background: 'none', border: 'none', cursor: 'pointer', font: 'inherit' }}
+                >
+                  រួមចំណែកម្តងទៀត / Contribute another
+                </button>
+              </div>
             </div>
           </main>
         </div>
