@@ -15,7 +15,9 @@ export function normalizeEntry(item) {
     place: item.place,
     contributor: item.contributor || item.contributor_name || null,
     photo_url: item.photo_url,
-    status: item.status || 'published',
+    // The database column is NOT NULL with a default, so item.status is always
+    // set. The fallback exists only as a last resort against undefined data.
+    status: item.status || 'pending',
     owner: item.owner,
     created_at: item.created_at,
   };
@@ -46,7 +48,10 @@ export default function useEntries() {
           .order('created_at', { ascending: false });
 
         if (!error && data && data.length > 0) {
-          setEntries(data.map(normalizeEntry));
+          // The Supabase query already filters by status = 'published', but with
+          // RLS a reviewer's session can return every status. The client-side
+          // filter is defense-in-depth: only published entries reach the public.
+          setEntries(data.map(normalizeEntry).filter((e) => e.status === 'published'));
         } else if (error) {
           console.error('Failed to fetch entries from Supabase:', error);
         }
