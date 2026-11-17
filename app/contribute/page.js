@@ -536,7 +536,9 @@ export default function ContributePage() {
           <main className="contribute-container">
             <div className="contribute-card" style={{ textAlign: 'center', padding: '48px 24px', maxWidth: '560px', margin: '40px auto' }}>
               <div className="auth-motif" aria-hidden="true" style={{ marginBottom: '12px' }}>
-                <ThemeVibeIcon motif="lantern" size={28} />Thank you for your contribution!</h1>
+                <ThemeVibeIcon motif="lantern" size={28} />
+              </div>
+              <h1 className="auth-title">Thank you for your contribution!</h1>
               <div className="auth-title-sub">Thank you for sharing this</div>
               <p className="auth-description" style={{ margin: '16px 0 8px' }} lang="km">
                 Your entries is waiting for review before being put into public.

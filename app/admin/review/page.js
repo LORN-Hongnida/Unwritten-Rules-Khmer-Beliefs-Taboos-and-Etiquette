@@ -234,7 +234,26 @@ return (
                     <div className="entry-card-body" style={{ padding: '20px 24px' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
                         <span className="entry-card-badge" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '3px 10px', borderRadius: '999px', fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', background: 'rgba(229, 193, 88, 0.12)', color: 'var(--accent)', border: '1px solid rgba(229, 193, 88, 0.25)' }}>
-<div style={{ display: 'flex', alignItems: 'center', gap: '10px', paddingTop: '14px', borderTop: '1px solid var(--card-border)', flexWrap: 'wrap' }}>
+                          <ThemeVibeIcon motif={cat.motif} size={11} />
+                          <span lang="km">{cat.km}</span>
+                        </span>
+                        <span style={{ fontSize: '11px', fontWeight: 600, color: 'var(--ink-muted)' }}>{cat.en}</span>
+                        <span style={{ fontSize: '11px', color: 'var(--ink-muted)', marginLeft: 'auto' }}>
+                          {new Date(entry.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}
+                        </span>
+                      </div>
+
+                      <h3 style={{ fontSize: '16px', fontWeight: 700, margin: '0 0 4px', color: 'var(--ink)' }}>{entry.title}</h3>
+                      <p style={{ fontSize: '14px', margin: '0 0 12px', color: 'var(--ink-muted)' }} lang="km">{entry.titleKm}</p>
+                      <p style={{ fontSize: '13px', lineHeight: 1.6, color: 'var(--ink-muted)', margin: '0 0 12px' }}>
+                        {entry.description && entry.description.length > 200 ? entry.description.slice(0, 200) + '…' : entry.description}
+                      </p>
+                      <div style={{ display: 'flex', gap: '16px', fontSize: '12px', color: 'var(--ink-muted)', marginBottom: '16px' }}>
+                        {entry.contributor && <span>From: <strong>{entry.contributor}</strong></span>}
+                        {entry.place && <span>Place: <strong>{entry.place}</strong></span>}
+                      </div>
+
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', paddingTop: '14px', borderTop: '1px solid var(--card-border)', flexWrap: 'wrap' }}>
                         <button type="button" className="auth-submit" style={{ padding: '8px 18px', fontSize: '13px', fontWeight: 700, cursor: actionLoading === entry.id ? 'not-allowed' : 'pointer', opacity: actionLoading === entry.id ? 0.6 : 1 }}
                           onClick={() => handleApprove(entry.id)} disabled={actionLoading === entry.id}>
                           {actionLoading === entry.id ? 'Processing…' : '✓ Approve / អនុម័ត'}
