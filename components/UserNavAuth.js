@@ -11,6 +11,7 @@ function withTheme(href, theme) {
 
 export default function UserNavAuth({ selectedTheme = 'all', onNavClick }) {
   const [user, setUser] = useState(null);
+  const [isReviewer, setIsReviewer] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef(null);
   const pathname = usePathname();
@@ -28,12 +29,19 @@ export default function UserNavAuth({ selectedTheme = 'all', onNavClick }) {
 
     try {
       const supabase = createClient();
-      supabase.auth.getUser().then(({ data: { user: currentUser } }) => {
+      supabase.auth.getUser().then(async ({ data: { user: currentUser } }) => {
         setUser(currentUser);
+        if (currentUser) {
+          try {
+            const { data: reviewerStatus } = await supabase.rpc('is_reviewer');
+            setIsReviewer(!!reviewerStatus);
+          } catch { /* not a reviewer */ }
+        }
       }).catch(() => {});
 
       const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
         setUser(session?.user ?? null);
+        if (!session?.user) setIsReviewer(false);
       });
 
       return () => subscription?.unsubscribe();
@@ -128,6 +136,21 @@ export default function UserNavAuth({ selectedTheme = 'all', onNavClick }) {
               <span>My Entries</span>
               <span lang="km">ធាតុរបស់ខ្ញុំ</span>
             </Link>
+
+            {isReviewer && (
+              <Link
+                href="/admin/review"
+                role="menuitem"
+                className="user-menu-link"
+                onClick={() => {
+                  setIsOpen(false);
+                  if (onNavClick) onNavClick();
+                }}
+              >
+                <span>Review Queue</span>
+                <span lang="km">ការពិនិត្យធាតុ</span>
+              </Link>
+            )}
 
             <button
               type="button"
