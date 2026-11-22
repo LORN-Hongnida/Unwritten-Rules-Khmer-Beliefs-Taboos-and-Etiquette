@@ -15,19 +15,24 @@ export function useLanguage() {
 // make the server's HTML and the browser's first render disagree.
 export default function LanguageProvider({ children }) {
   const [language, setLanguage] = useState('en');
+  const [restored, setRestored] = useState(false);
 
   useEffect(() => {
     try {
       const stored = localStorage.getItem('archive_language');
       if (stored === 'km' || stored === 'en') setLanguage(stored);
     } catch {}
+    setRestored(true);
   }, []);
 
   // <html lang> follows the toggle, so screen readers pronounce the page in
-  // the right language and the browser picks Khmer-aware line breaking.
+  // the right language and the browser picks Khmer-aware line breaking. The
+  // inline script in app/layout.js sets it before the first paint; this waits
+  // for the saved choice rather than writing the default 'en' over it first.
   useEffect(() => {
+    if (!restored) return;
     document.documentElement.lang = language === 'km' ? 'km' : 'en';
-  }, [language]);
+  }, [restored, language]);
 
   const toggleLanguage = useCallback(() => {
     setLanguage((prev) => {

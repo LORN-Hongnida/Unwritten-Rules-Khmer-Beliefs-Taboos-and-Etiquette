@@ -31,13 +31,15 @@ const SHORT_LABELS = {
   taboos: { en: "Khmer Taboos", km: "ការហាមប្រាមខ្មែរ" },
 };
 
-export default function ThemeDropdown({ isOpen, onClose, selectedTheme, onSelectTheme }) {
+// `inline` draws the list as a section of another menu (the account menu)
+// rather than as its own popover: always shown, no outside-click handling.
+export default function ThemeDropdown({ isOpen, onClose, selectedTheme, onSelectTheme, inline = false }) {
   const dropdownRef = useRef(null);
   const { t } = useLanguage();
 
   // Close on Escape or a click outside the panel.
   useEffect(() => {
-    if (!isOpen) return;
+    if (!isOpen || inline) return;
 
     const handleKeyDown = (e) => {
       if (e.key === "Escape") onClose();
@@ -57,10 +59,10 @@ export default function ThemeDropdown({ isOpen, onClose, selectedTheme, onSelect
     };
   }, [isOpen, onClose]);
 
-  if (!isOpen) return null;
+  if (!isOpen && !inline) return null;
 
   return (
-    <div className="theme-dropdown" ref={dropdownRef} role="menu">
+    <div className={`theme-dropdown ${inline ? "theme-dropdown-inline" : ""}`} ref={dropdownRef} role={inline ? "group" : "menu"}>
       <div className="theme-dropdown-header">
         <span className="theme-dropdown-title">
           {t({ en: "Theme & Category", km: "រចនាបថ និងប្រភេទ" })}
@@ -79,7 +81,7 @@ export default function ThemeDropdown({ isOpen, onClose, selectedTheme, onSelect
               className={`theme-option ${isSelected ? "is-selected" : ""}`}
               onClick={() => {
                 onSelectTheme(key);
-                onClose();
+                if (onClose) onClose();
               }}
             >
               <span className="theme-option-main">

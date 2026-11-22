@@ -4,7 +4,6 @@ import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ThemeVibeIcon } from "./KbachMotifs";
-import ThemeDropdown from "./ThemeDropdown";
 import UserNavAuth from "./UserNavAuth";
 import LanguageToggle from "./LanguageToggle";
 import { useLanguage } from "./LanguageProvider";
@@ -70,7 +69,6 @@ export default function SiteNav({
 }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { language, t } = useLanguage();
-  const [isThemeOpen, setIsThemeOpen] = useState(false);
   const pathname = usePathname();
 
   const motif = themes[selectedTheme].motifType;
@@ -120,32 +118,8 @@ export default function SiteNav({
         </Link>
 
         <div className="site-nav-actions">
-          <div className="site-nav-theme">
-            <button
-              type="button"
-              className="site-nav-theme-trigger"
-              onClick={() => setIsThemeOpen((open) => !open)}
-              aria-expanded={isThemeOpen}
-              aria-haspopup="true"
-              title={t({ en: 'Change theme and category', km: 'ប្តូររចនាបថ និងប្រភេទ' })}
-            >
-              <ThemeVibeIcon motif={motif} size={15} />
-              <span className="site-nav-theme-label">
-                {selectedTheme === "all"
-                  ? t({ en: "Theme", km: "រចនាបថ" })
-                  : t({ en: themes[selectedTheme].nameEn.split(" ")[0], km: themes[selectedTheme].nameKm.split(" ")[0] })}
-              </span>
-              <span className="site-nav-theme-caret" aria-hidden="true">▾</span>
-            </button>
-
-            <ThemeDropdown
-              isOpen={isThemeOpen}
-              onClose={() => setIsThemeOpen(false)}
-              selectedTheme={selectedTheme}
-              onSelectTheme={onSelectTheme}
-            />
-          </div>
-
+          {/* The theme picker is in the account menu (or beside Sign In when
+              signed out), so this group is display settings and the account. */}
           <button
             type="button"
             className="site-nav-mode-toggle"
@@ -164,6 +138,11 @@ export default function SiteNav({
           </button>
 
           <LanguageToggle />
+          <UserNavAuth
+            selectedTheme={selectedTheme}
+            onSelectTheme={onSelectTheme}
+            onNavClick={() => setIsMenuOpen(false)}
+          />
           <button
           type="button"
           className={`site-nav-burger ${isMenuOpen ? "is-open" : ""}`}
@@ -202,7 +181,6 @@ export default function SiteNav({
               </Link>
             )
           )}
-          <UserNavAuth selectedTheme={selectedTheme} onNavClick={() => setIsMenuOpen(false)} />
         </div>
 
       </div>

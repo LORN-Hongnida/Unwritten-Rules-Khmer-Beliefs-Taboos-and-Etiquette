@@ -5,12 +5,14 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { createClient } from '../lib/supabase/client';
 import { useLanguage } from './LanguageProvider';
+import ThemeDropdown from './ThemeDropdown';
+import ThemePicker from './ThemePicker';
 
 function withTheme(href, theme) {
   return theme === 'all' ? href : `${href}?theme=${theme}`;
 }
 
-export default function UserNavAuth({ selectedTheme = 'all', onNavClick }) {
+export default function UserNavAuth({ selectedTheme = 'all', onSelectTheme, onNavClick }) {
   const [user, setUser] = useState(null);
   const [isReviewer, setIsReviewer] = useState(false);
   const { t } = useLanguage();
@@ -125,6 +127,11 @@ export default function UserNavAuth({ selectedTheme = 'all', onNavClick }) {
               </div>
             </div>
 
+            {/* The theme picker lives here for a signed-in reader, keeping the
+                bar itself to navigation. Picking a theme leaves the menu open,
+                so themes can be compared one after another. */}
+            <ThemeDropdown inline selectedTheme={selectedTheme} onSelectTheme={onSelectTheme} />
+
             {/* Lives in this menu rather than NAV_LINKS because that list is a
                 module constant shown to everyone, and this page only means
                 anything to someone signed in. */}
@@ -168,14 +175,19 @@ export default function UserNavAuth({ selectedTheme = 'all', onNavClick }) {
     );
   }
 
+  // Signed out there is no account menu to hold the theme picker, so it sits
+  // beside Sign In as its own button.
   return (
-    <Link
-      href={withTheme('/login', selectedTheme)}
-      className={`site-nav-link ${pathname === '/login' || pathname === '/signup' ? 'is-active' : ''}`}
-      aria-current={pathname === '/login' ? 'page' : undefined}
-      onClick={onNavClick}
-    >
-      {t({ en: 'Sign In', km: 'ចូលគណនី' })}
-    </Link>
+    <>
+      <ThemePicker selectedTheme={selectedTheme} onSelectTheme={onSelectTheme} />
+      <Link
+        href={withTheme('/login', selectedTheme)}
+        className={`site-nav-link site-nav-signin ${pathname === '/login' || pathname === '/signup' ? 'is-active' : ''}`}
+        aria-current={pathname === '/login' ? 'page' : undefined}
+        onClick={onNavClick}
+      >
+        {t({ en: 'Sign In', km: 'ចូលគណនី' })}
+      </Link>
+    </>
   );
 }
