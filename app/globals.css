@@ -24,12 +24,15 @@
   /* Display role. Latin text is all Plus Jakarta Sans: the display face and
      the body face are the same family at different weights, which keeps the
      type system to two families including Khmer. */
-  /* Kantumruy Pro second: Plus Jakarta Sans has no Khmer glyphs, so in Khmer
-     mode the browser takes each Khmer character from Kantumruy Pro instead of
-     whatever the system happens to have. Latin text is unaffected. */
-  --font-serif-title: 'Plus Jakarta Sans', 'Kantumruy Pro', sans-serif;
-  --font-serif-body: 'Plus Jakarta Sans', 'Kantumruy Pro', sans-serif;
-  --font-sans-khmer: 'Kantumruy Pro', 'Noto Serif Khmer', serif;
+  /* A Khmer face second: Plus Jakarta Sans has no Khmer glyphs, so the browser
+     takes each Khmer character from the next font instead of whatever the
+     system happens to have. Latin text is unaffected. All Khmer text uses
+     Battambang, a traditional book face that reads easily at every size; the
+     hero's main Khmer title alone uses Moul, the ceremonial display face. */
+  --font-serif-title: 'Plus Jakarta Sans', 'Battambang', sans-serif;
+  --font-serif-body: 'Plus Jakarta Sans', 'Battambang', sans-serif;
+  --font-sans-khmer: 'Battambang', 'Noto Serif Khmer', serif;
+  --font-khmer-display: 'Moul', 'Battambang', serif;
 
   /* Gold & Teak base tokens. Per-theme values are set by the theme
      tables below; these are the fallbacks before a theme applies. */
@@ -1545,14 +1548,39 @@ textarea::placeholder {
   transition: background-color 0.7s ease, border-color 0.7s ease;
 }
 
+/* Three columns: brand on the left, page links centred, settings and account
+   on the right. The two outer columns share the leftover width equally, which
+   is what keeps the links at the true centre of the bar. Columns and rows are
+   set explicitly because the markup order is brand, actions, links. */
 .site-nav-inner {
   max-width: 1280px;
   margin: 0 auto;
   padding: 10px 16px;
-  display: flex;
+  display: grid;
+  /* The brand column may shrink (its text ends in an ellipsis); the actions
+     column never shrinks below its buttons. Before this, longer Khmer labels
+     made the bar wider than the screen, which widened the whole page and left
+     the nav and hero looking short of full width. */
+  grid-template-columns: minmax(0, 1fr) auto minmax(max-content, 1fr);
   align-items: center;
-  justify-content: space-between;
   gap: 16px;
+}
+
+.site-nav-inner > .site-nav-brand {
+  grid-column: 1;
+  grid-row: 1;
+  justify-self: start;
+}
+
+.site-nav-inner > .site-nav-links {
+  grid-column: 2;
+  grid-row: 1;
+}
+
+.site-nav-inner > .site-nav-actions {
+  grid-column: 3;
+  grid-row: 1;
+  justify-self: end;
 }
 
 /* --- Brand lockup ------------------------------------------------------- */
@@ -1563,7 +1591,8 @@ textarea::placeholder {
   gap: 10px;
   text-decoration: none;
   min-width: 0;
-  flex-shrink: 0;
+  max-width: 100%;
+  overflow: hidden;
 }
 
 .site-nav-mark {
@@ -1606,6 +1635,8 @@ textarea::placeholder {
   letter-spacing: -0.01em;
   color: var(--heading-text);
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
   transition: color 0.7s ease;
 }
 
@@ -1616,6 +1647,8 @@ textarea::placeholder {
   letter-spacing: 0.02em;
   color: var(--ink-muted);
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 /* --- Links -------------------------------------------------------------- */
@@ -1739,13 +1772,15 @@ textarea::placeholder {
     border-bottom-color: var(--nav-border);
   }
 
-  .site-nav-link {
+  /* Only the links inside the burger menu become full-width rows; Sign In
+     stays a plain link up in the bar. */
+  .site-nav-links .site-nav-link {
     padding: 14px 0;
     font-size: 15px;
     border-top: 1px solid var(--card-border);
   }
 
-  .site-nav-link::after {
+  .site-nav-links .site-nav-link::after {
     display: none;
   }
 }
@@ -1855,6 +1890,9 @@ textarea::placeholder {
   /* Matches the reference's drop-shadow-md; the heavier shadow used before
      read as harsh, and on a light ground it is dropped entirely. */
   text-shadow: 0 4px 3px rgba(0, 0, 0, 0.16);
+  /* Same last-resort breaking as .hero-title, for the unspaced Khmer line. */
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 
 [data-mode="light"] .hero-khmer-title h2 {
@@ -1921,6 +1959,10 @@ textarea::placeholder {
   line-height: 1.25;
   letter-spacing: -0.025em;
   color: var(--ink);
+  /* Khmer has no spaces between words. If the browser cannot find a break in
+     a long Khmer title on a narrow screen, it may break anywhere rather than
+     push the page wider than the screen. */
+  overflow-wrap: anywhere;
 }
 
 .hero-title-sub {
@@ -1956,6 +1998,27 @@ textarea::placeholder {
 }
 
 /* --- Call to action ------------------------------------------------------ */
+
+/* Outlined partner to the filled Browse button: same shape and size, the
+   theme's accent as ink, so it reads as the second choice. */
+.hero-cta-secondary {
+  background-color: var(--input-bg);
+  color: var(--accent);
+  border: 1px solid var(--accent);
+  text-decoration: none;
+}
+
+.hero-cta-secondary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px var(--accent-glow);
+}
+
+/* Block-level so it has no text baseline of its own; the button's flex row
+   (align-items: center) then centres it on the label. */
+.hero-cta-icon {
+  display: block;
+  flex-shrink: 0;
+}
 
 .hero-actions {
   display: flex;
@@ -2344,25 +2407,73 @@ button:hover .kbach-micro {
   transition: border-color 0.7s ease, background-color 0.7s ease,
     color 0.7s ease, opacity 0.3s ease;
 }
-.site-nav-lang-toggle {
-  display: inline-flex;
+/* --- Language switch: [ EN | KH ] with a sliding pill -------------------- */
+/* Two equal cells; the pill sits behind them and slides to the current
+   language. Same accent fill as an active filter pill, so it follows the
+   theme. */
+.lang-switch {
+  position: relative;
+  display: inline-grid;
+  grid-template-columns: 1fr 1fr;
   align-items: center;
-  justify-content: center;
-  width: 36px;
-  height: 36px;
+  padding: 3px;
   border-radius: 999px;
   border: 1px solid var(--card-border);
   background-color: var(--input-bg);
-  color: var(--accent);
   font-family: var(--font-serif-title);
   font-size: 11px;
   font-weight: 700;
+  letter-spacing: 0.06em;
   cursor: pointer;
-  transition: border-color 0.7s ease, background-color 0.7s ease, color 0.7s ease;
+  transition: border-color 0.2s ease;
 }
-.site-nav-lang-toggle:hover {
+
+.lang-switch:hover {
   border-color: var(--accent);
-  background-color: var(--accent-glow);
+}
+
+.lang-switch:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.lang-switch-pill {
+  position: absolute;
+  top: 3px;
+  bottom: 3px;
+  left: 3px;
+  width: 30px;
+  border-radius: 999px;
+  background-color: var(--pill-active-bg);
+  box-shadow: 0 2px 8px var(--accent-glow);
+  transition: transform 0.25s ease;
+}
+
+.lang-switch.is-km .lang-switch-pill {
+  transform: translateX(30px);
+}
+
+.lang-switch-label {
+  position: relative;
+  z-index: 1;
+  width: 30px;
+  padding: 5px 0;
+  text-align: center;
+  color: var(--ink-muted);
+  transition: color 0.25s ease;
+}
+
+/* The language under the pill takes the pill's own ink. */
+.lang-switch:not(.is-km) .lang-switch-en,
+.lang-switch.is-km .lang-switch-km {
+  color: var(--pill-active-text);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lang-switch-pill,
+  .lang-switch-label {
+    transition: none;
+  }
 }
 
 
@@ -4900,7 +5011,8 @@ button:hover .kbach-micro {
   position: absolute;
   right: 0;
   top: calc(100% + 8px);
-  width: 220px;
+  /* Wide enough for the theme list it now holds. */
+  width: 256px;
   padding: 12px;
   border-radius: 16px;
   border: 1px solid var(--modal-border);
@@ -4959,6 +5071,10 @@ button:hover .kbach-micro {
 /* Same shape as the logout row so the menu reads as one list, in the archive's
    own ink rather than the red reserved for leaving. */
 .user-menu-link {
+  /* border-box so the padding sits inside the 100% width. This is a link, and
+     unlike the Log out <button> it defaults to content-box: its hover fill was
+     24px wider than the menu and spilled past its edge. */
+  box-sizing: border-box;
   width: 100%;
   padding: 8px 12px;
   border-radius: 8px;
@@ -4974,8 +5090,25 @@ button:hover .kbach-micro {
   transition: background-color 0.2s ease;
 }
 
+/* Tinted from the current theme's accent, so the hover changes with it. */
 .user-menu-link:hover {
-  background-color: rgba(201, 162, 39, 0.14);
+  background-color: color-mix(in srgb, var(--accent) 16%, transparent);
+}
+
+/* The theme list as a section of the account menu rather than a popover. */
+.theme-dropdown.theme-dropdown-inline {
+  position: static;
+  width: auto;
+  margin: 0 0 8px;
+  padding: 0 0 8px;
+  border: none;
+  border-bottom: 1px solid var(--card-border);
+  border-radius: 0;
+  background: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  box-shadow: none;
+  animation: none;
 }
 
 /* The Latin face has no Khmer coverage, so the script would otherwise fall back
@@ -5146,6 +5279,32 @@ button:hover .kbach-micro {
   background: var(--accent-glow);
   color: var(--accent);
   font-weight: 600;
+}
+
+/* Hover answers "can I pick this?": the theme's accent on the border and ink,
+   as the Browse filter pills do, with a slight lift. The selected pill already
+   wears the accent, so on hover it only gains a soft glow. */
+.category-pill-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 8%, transparent);
+  transform: translateY(-1px);
+}
+
+.category-pill-btn.is-selected:hover {
+  background: var(--accent-glow);
+  box-shadow: 0 4px 12px var(--accent-glow);
+}
+
+.category-pill-btn:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .category-pill-btn:hover {
+    transform: none;
+  }
 }
 
 .photo-dropzone {
@@ -5676,3 +5835,65 @@ button:hover .kbach-micro {
 
 
 
+
+/* --- Hero in Khmer mode ---------------------------------------------------- */
+/* Khmer read small and left the hero looking empty at the sizes tuned for
+   English, so in Khmer mode the text steps up and its blocks widen. Khmer also
+   gets taller lines (stacked vowels and subscripts need the room) and no
+   italic (slanted Khmer is hard to read). <html lang> is set by the language
+   toggle, so English mode is untouched. */
+:root[lang="km"] .hero-inner {
+  max-width: 1080px;
+}
+
+:root[lang="km"] .hero-title {
+  max-width: 1000px;
+  font-size: clamp(34px, 7vw, 74px);
+  line-height: 1.5;
+  letter-spacing: 0;
+}
+
+:root[lang="km"] .hero-title-sub {
+  margin-top: 10px;
+  font-size: clamp(19px, 3vw, 30px);
+  font-style: normal;
+  line-height: 1.7;
+}
+
+:root[lang="km"] .hero-description {
+  max-width: 860px;
+  font-size: clamp(15px, 1.9vw, 19px);
+  font-weight: 400;
+  line-height: 1.9;
+}
+
+:root[lang="km"] .hero-cta {
+  font-size: 16px;
+}
+
+:root[lang="km"] .hero-stats {
+  max-width: 780px;
+  font-size: 14px;
+}
+
+/* --- Hero main title in Moul ---------------------------------------------- */
+/* Wherever the hero shows its title in Khmer (the big title in Khmer mode,
+   the line above it in English mode), it is set in Moul. Moul has a single
+   weight, so it is not bolded (a synthetic bold smears its strokes), and its
+   tall, wide forms need a slightly smaller size and more line height than
+   Battambang did at the same spot. */
+.hero-title:lang(km),
+.hero-khmer-title h2:lang(km) {
+  font-family: var(--font-khmer-display);
+  font-weight: 400;
+  letter-spacing: 0;
+}
+
+:root[lang="km"] .hero-title {
+  font-size: clamp(28px, 5.8vw, 62px);
+  line-height: 1.75;
+}
+
+.hero-khmer-title h2:lang(km) {
+  line-height: 1.7;
+}

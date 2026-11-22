@@ -1,5 +1,6 @@
 'use client';
 
+import Link from "next/link";
 import { KbachCorner, KhmerFriezeBorder, ThemeVibeIcon } from "./KbachMotifs";
 import { useLanguage } from "./LanguageProvider";
 import themes from "../data/themes.js";
@@ -64,6 +65,22 @@ export default function HeroSection({
             <span>{t({ en: 'Browse Archive', km: 'រុករកបណ្ណសារ' })} ({entryCount})</span>
             <span className="hero-cta-arrow" aria-hidden="true">→</span>
           </button>
+          {/* Second, outlined: browsing is what most visitors came for, and
+              contributing is the invitation beside it. Keeps the theme, like
+              the nav's links do. */}
+          <Link
+            href={selectedTheme === "all" ? "/contribute" : `/contribute?theme=${selectedTheme}`}
+            className="hero-cta hero-cta-secondary"
+          >
+            {/* Drawn rather than typed: a "+" character sits on the text
+                baseline, which is not where the eye expects the middle of a
+                Khmer label. An icon is centred by the flex row instead. */}
+            <svg className="hero-cta-icon" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"
+              fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round">
+              <path d="M12 5v14M5 12h14" />
+            </svg>
+            <span>{t({ en: 'Contribute', km: 'រួមចំណែក' })}</span>
+          </Link>
         </div>
 
         <div className="hero-stats">
