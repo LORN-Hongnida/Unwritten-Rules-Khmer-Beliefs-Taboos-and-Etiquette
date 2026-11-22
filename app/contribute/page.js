@@ -6,6 +6,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import SiteNav from '../../components/SiteNav';
 import ThemeAtmosphereBackdrop from '../../components/ThemeAtmosphereBackdrop';
 import { useTheme } from '../../components/ThemeProvider';
+import { useLanguage } from '../../components/LanguageProvider';
 import { ThemeVibeIcon } from '../../components/KbachMotifs';
 import EntryPreviewCard from '../../components/EntryPreviewCard';
 import ImageCropper from '../../components/ImageCropper';
@@ -58,6 +59,7 @@ function getFileExtension(filename) {
 
 export default function ContributePage() {
   const { selectedTheme, setSelectedTheme, isDark, toggleMode } = useTheme();
+  const { t } = useLanguage();
   const router = useRouter();
   const searchParams = useSearchParams();
   const editId = searchParams.get('edit');
@@ -91,6 +93,7 @@ export default function ContributePage() {
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
   const [fetchingEdit, setFetchingEdit] = useState(false);
+  const [rereviewWarning, setRereviewWarning] = useState(false);
 
   // Check logged in user
   useEffect(() => {
@@ -135,14 +138,21 @@ export default function ContributePage() {
           return;
         }
 
-        // Security check: must be owner to edit
-        if (data.owner !== user.id) {
+        // Must be the owner, or a reviewer (the site's admins) to edit. The
+        // update policy enforces the same rule in the database.
+        const { data: reviewer } = await supabase.rpc('is_reviewer');
+        const isAdmin = reviewer === true;
+        if (data.owner !== user.id && !isAdmin) {
           console.error('Unauthorized edit attempt: user is not owner');
           if (isMounted) setFormError(MESSAGES.notOwner);
           return;
         }
 
         if (isMounted) {
+          // Saving will take a published entry out of the archive until it is
+          // approved again (admins' edits excepted), so the author is told
+          // before they press save, not after.
+          setRereviewWarning(data.status === 'published' && !isAdmin);
           setTitle(data.title || '');
           setTitleKm(data.title_km || '');
           setCategory(data.category || 'beliefs');
@@ -374,8 +384,10 @@ export default function ContributePage() {
       }
 
       // Prepare explicit insert/update payload (never spreading form data)
+      // No owner here: it is added on insert only, below. On an edit it would
+      // hand the entry to whoever is editing, which for an admin is not the
+      // author.
       const payload = {
-        owner: user.id,
         title: title.trim(),
         title_km: titleKm.trim(),
         category,
@@ -401,8 +413,9 @@ export default function ContributePage() {
         const { data, error } = await supabase
           .from('entries')
           .update(isReviewer === true ? payload : { ...payload, status: 'pending' })
+          // No owner filter: an admin edits entries they do not own. The
+          // update policy still refuses anyone who is neither owner nor admin.
           .eq('id', editId)
-          .eq('owner', user.id)
           .select();
 
         if (error || !data || data.length === 0) {
@@ -416,7 +429,9 @@ export default function ContributePage() {
         // archive, so sending them to it on /browse would show an empty page
         // and read as a bug. /my-entries shows it waiting, which is the truth.
         if (isReviewer === true) {
-          router.push(`/browse?entry=${data[0].id}`);
+          // An admin's edit keeps the entry's status. A published one is on
+          // Browse; one still waiting or returned lives on the admin page.
+          router.push(data[0].status === 'published' ? `/browse?entry=${data[0].id}` : '/admin/review');
         } else {
           router.push('/my-entries');
         }
@@ -424,7 +439,7 @@ export default function ContributePage() {
       } else {
         const { data, error } = await supabase
           .from('entries')
-          .insert(payload)
+          .insert({ ...payload, owner: user.id })
           .select();
 
         if (error || !data || data.length === 0) {
@@ -458,7 +473,7 @@ export default function ContributePage() {
             onToggleMode={toggleMode}
           />
           <main className="contribute-container" style={{ textAlign: 'center', padding: '60px 20px' }}>
-            <p>Loading session...</p>
+            <p>{t({ en: 'Loading…', km: 'កំពុងផ្ទុក…' })}</p>
           </main>
         </div>
       </div>
@@ -481,13 +496,15 @@ export default function ContributePage() {
               <div className="auth-motif" aria-hidden="true" style={{ marginBottom: '12px' }}>
                 <ThemeVibeIcon motif="etiquette" size={28} />
               </div>
-              <h1 className="auth-title">ចូលប្រើប្រាស់គណនី</h1>
-              <div className="auth-title-sub">Contributor Authentication Required</div>
+              <h1 className="auth-title">{t({ en: 'Sign in required', km: 'ត្រូវចូលគណនី' })}</h1>
               <p className="auth-description" style={{ margin: '16px 0 24px' }}>
-                Only logged-in contributors can submit entries to the archive. Please sign in to share cultural knowledge.
+                {t({
+                  en: 'Only logged-in contributors can submit entries to the archive. Please sign in to share cultural knowledge.',
+                  km: 'មានតែអ្នករួមចំណែកដែលបានចូលគណនីប៉ុណ្ណោះ ដែលអាចដាក់ស្នើធាតុទៅបណ្ណសារ។ សូមចូលគណនីដើម្បីចែករំលែកចំណេះដឹងវប្បធម៌។',
+                })}
               </p>
               <Link href="/login" className="auth-submit" style={{ display: 'inline-block', textDecoration: 'none' }}>
-                Sign In to Contribute / ចូលគណនី
+                {t({ en: 'Sign In to Contribute', km: 'ចូលគណនីដើម្បីរួមចំណែក' })}
               </Link>
             </div>
           </main>
@@ -538,16 +555,15 @@ export default function ContributePage() {
               <div className="auth-motif" aria-hidden="true" style={{ marginBottom: '12px' }}>
                 <ThemeVibeIcon motif="lantern" size={28} />
               </div>
-              <h1 className="auth-title">Thank you for your contribution!</h1>
-              <div className="auth-title-sub">Thank you for sharing this</div>
-              <p className="auth-description" style={{ margin: '16px 0 8px' }} lang="km">
-                Your entries is waiting for review before being put into public.
-              </p>
-              <p className="auth-description" style={{ margin: '0 0 24px' }}>
-                Your entry is waiting to be reviewed before it joins the public archive.
+              <h1 className="auth-title">{t({ en: 'Thank you for your contribution!', km: 'សូមអរគុណចំពោះការរួមចំណែករបស់អ្នក!' })}</h1>
+              <p className="auth-description" style={{ margin: '16px 0 24px' }}>
+                {t({
+                  en: 'Your entry is waiting to be reviewed before it joins the public archive.',
+                  km: 'ធាតុរបស់អ្នកកំពុងរង់ចាំការពិនិត្យ មុននឹងចូលទៅក្នុងបណ្ណសារសាធារណៈ។',
+                })}
               </p>
               <Link href="/my-entries" className="auth-submit" style={{ display: 'inline-block', textDecoration: 'none' }}>
-                View my entries
+                {t({ en: 'View my entries', km: 'មើលធាតុរបស់ខ្ញុំ' })}
               </Link>
               <div className="auth-footer" style={{ marginTop: '20px' }}>
                 <button
@@ -556,7 +572,7 @@ export default function ContributePage() {
                   onClick={handleContributeAnother}
                   style={{ background: 'none', border: 'none', cursor: 'pointer', font: 'inherit' }}
                 >
-                  រួមចំណែកម្តងទៀត / Contribute another
+                  {t({ en: 'Contribute another', km: 'រួមចំណែកម្តងទៀត' })}
                 </button>
               </div>
             </div>
@@ -583,16 +599,21 @@ export default function ContributePage() {
           <div className="contribute-header">
             <Link href="/browse" className="contribute-back">
               <span>←</span>
-              <span>Back to Browse Archive (ត្រឡប់ទៅប័ណ្ណសារ)</span>
+              <span>{t({ en: 'Back to Browse Archive', km: 'ត្រឡប់ទៅបណ្ណសារ' })}</span>
             </Link>
             <div className="contribute-title-wrapper">
               <ThemeVibeIcon motif={category} size={28} />
               <h1 className="contribute-title">
-                {editId ? 'កែប្រែទិន្នន័យ / Edit Entry' : 'បន្ថែមចំណេះដឹងវប្បធម៌ / Contribute Entry'}
+                {editId
+                  ? t({ en: 'Edit Entry', km: 'កែប្រែទិន្នន័យ' })
+                  : t({ en: 'Contribute Entry', km: 'បន្ថែមចំណេះដឹងវប្បធម៌' })}
               </h1>
             </div>
             <p className="contribute-subtitle">
-              Document oral traditions, elder teachings, and ancient rules for preservation in the Khmer Living Archive.
+              {t({
+                en: 'Document oral traditions, elder teachings, and ancient rules for preservation in the Khmer Living Archive.',
+                km: 'កត់ត្រាទំនៀមទម្លាប់តាមមាត់ ពាក្យទូន្មានរបស់ចាស់ទុំ និងក្បួនច្បាប់បុរាណ ដើម្បីថែរក្សាទុកក្នុងបណ្ណសារ។',
+              })}
             </p>
           </div>
 
@@ -602,9 +623,18 @@ export default function ContributePage() {
             </div>
           )}
 
+          {editId && rereviewWarning && (
+            <div className="auth-success" style={{ marginBottom: '24px' }}>
+              <BilingualMessage
+                en="This entry is public. Saving your changes sends it back for review, and it leaves the archive until a reviewer approves it again. The reviewer will see exactly what you changed."
+                km="ធាតុនេះជាសាធារណៈ។ ការរក្សាទុកការកែប្រែនឹងបញ្ជូនវាទៅពិនិត្យម្តងទៀត ហើយវានឹងចេញពីបណ្ណសាររហូតដល់អ្នកពិនិត្យអនុម័តម្តងទៀត។ អ្នកពិនិត្យនឹងឃើញអ្វីដែលអ្នកបានកែប្រែ។"
+              />
+            </div>
+          )}
+
           {fetchingEdit ? (
             <div className="contribute-card" style={{ textAlign: 'center', padding: '40px' }}>
-              <p>Loading entry details...</p>
+              <p>{t({ en: 'Loading entry details…', km: 'កំពុងផ្ទុកព័ត៌មានលម្អិត…' })}</p>
             </div>
           ) : (
             <div className="contribute-grid">
@@ -615,14 +645,13 @@ export default function ContributePage() {
                 <div className="contribute-card">
                   <h3 className="contribute-section-title">
                     <ThemeVibeIcon motif="lantern" size={16} />
-                    <span>1. Category & Titles (ប្រភេទ និងចំណងជើង)</span>
+                    <span>1. {t({ en: 'Category & Titles', km: 'ប្រភេទ និងចំណងជើង' })}</span>
                   </h3>
 
                   {/* Category Pill Buttons */}
                   <div className="auth-field">
                     <label className="auth-label">
-                      <span>Category <span className="auth-required">*</span></span>
-                      <span className="auth-label-km">ប្រភេទ</span>
+                      <span>{t({ en: 'Category', km: 'ប្រភេទ' })} <span className="auth-required">*</span></span>
                     </label>
                     <div className="category-pill-selector">
                       {CATEGORY_OPTIONS.map((opt) => (
@@ -633,7 +662,7 @@ export default function ContributePage() {
                           onClick={() => setCategory(opt.value)}
                         >
                           <ThemeVibeIcon motif={opt.motif} size={13} />
-                          <span>{opt.labelEn} ({opt.labelKm})</span>
+                          <span>{t({ en: opt.labelEn, km: opt.labelKm })}</span>
                         </button>
                       ))}
                     </div>
@@ -646,8 +675,7 @@ export default function ContributePage() {
                   <div className="contribute-row-2col" style={{ marginTop: '16px' }}>
                     <div className="auth-field" style={{ marginBottom: 0 }}>
                       <label className="auth-label" htmlFor="entry-title-km">
-                        <span>Khmer Title <span className="auth-required">*</span></span>
-                        <span className="auth-label-km">ចំណងជើងភាសាខ្មែរ</span>
+                        <span>{t({ en: 'Khmer Title', km: 'ចំណងជើងភាសាខ្មែរ' })} <span className="auth-required">*</span></span>
                       </label>
                       <input
                         id="entry-title-km"
@@ -669,8 +697,7 @@ export default function ContributePage() {
 
                     <div className="auth-field" style={{ marginBottom: 0 }}>
                       <label className="auth-label" htmlFor="entry-title">
-                        <span>English Title <span className="auth-required">*</span></span>
-                        <span className="auth-label-km">ចំណងជើងជាភាសាអង់គ្លេស</span>
+                        <span>{t({ en: 'English Title', km: 'ចំណងជើងជាភាសាអង់គ្លេស' })} <span className="auth-required">*</span></span>
                       </label>
                       <input
                         id="entry-title"
@@ -695,20 +722,19 @@ export default function ContributePage() {
                 <div className="contribute-card">
                   <h3 className="contribute-section-title">
                     <ThemeVibeIcon motif="beliefs" size={16} />
-                    <span>2. Cultural Significance (ខ្លឹមសារ និងប្រភពដើម)</span>
+                    <span>2. {t({ en: 'Cultural Significance', km: 'ខ្លឹមសារ និងប្រភពដើម' })}</span>
                   </h3>
 
                   <div className="auth-field">
                     <label className="auth-label" htmlFor="entry-description">
-                      <span>Stated Traditional Belief <span className="auth-required">*</span></span>
-                      <span className="auth-label-km">ការរៀបរាប់ពីជំនឿ ឬការហាមប្រាម</span>
+                      <span>{t({ en: 'Stated Traditional Belief', km: 'ការរៀបរាប់ពីជំនឿ ឬការហាមប្រាម' })} <span className="auth-required">*</span></span>
                     </label>
                     <textarea
                       id="entry-description"
                       maxLength={1000}
                       className={`auth-input ${fieldErrors.description ? 'has-error' : ''}`}
                       rows={4}
-                      placeholder="Describe what elders taught, what happens according to the belief, or how people react..."
+                      placeholder={t({ en: 'Describe what elders taught, what happens according to the belief, or how people react...', km: 'រៀបរាប់ពីអ្វីដែលចាស់ទុំបានបង្រៀន អ្វីដែលកើតឡើងតាមជំនឿ ឬរបៀបដែលមនុស្សឆ្លើយតប...' })}
                       value={description}
                       onChange={(e) => setDescription(e.target.value)}
                     />
@@ -722,15 +748,14 @@ export default function ContributePage() {
 
                   <div className="auth-field">
                     <label className="auth-label" htmlFor="entry-reason">
-                      <span>Practical Origin / Rational Reason</span>
-                      <span className="auth-label-km">ប្រភពដើម និងហេតុផលជាក់ស្តែង</span>
+                      <span>{t({ en: 'Practical Origin / Rational Reason', km: 'ប្រភពដើម និងហេតុផលជាក់ស្តែង' })}</span>
                     </label>
                     <textarea
                       id="entry-reason"
                       maxLength={1000}
                       className="auth-input"
                       rows={3}
-                      placeholder="Why did elders pass this rule down? What practical danger or lesson does it serve?"
+                      placeholder={t({ en: 'Why did elders pass this rule down? What practical danger or lesson does it serve?', km: 'ហេតុអ្វីចាស់ទុំបន្សល់ទុកក្បួននេះ? តើវាការពារគ្រោះថ្នាក់ ឬផ្តល់មេរៀនអ្វីខ្លះ?' })}
                       value={reason}
                       onChange={(e) => setReason(e.target.value)}
                     />
@@ -745,15 +770,14 @@ export default function ContributePage() {
                   <div className="contribute-row-2col">
                     <div className="auth-field">
                       <label className="auth-label" htmlFor="entry-contributor">
-                        <span>Contributor / Source Credit</span>
-                        <span className="auth-label-km">អ្នកផ្តល់ព័ត៌មាន / ប្រភពដើម</span>
+                        <span>{t({ en: 'Contributor / Source Credit', km: 'អ្នកផ្តល់ព័ត៌មាន / ប្រភពដើម' })}</span>
                       </label>
                       <input
                         id="entry-contributor"
                         type="text"
                         maxLength={100}
                         className="auth-input"
-                        placeholder="e.g. Heng Vicheka, Grandmother Som, Parents"
+                        placeholder={t({ en: 'e.g. Grandmother Som, Parents', km: 'ឧ. លោកយាយសុំ ឪពុកម្តាយ' })}
                         value={contributor}
                         onChange={(e) => setContributor(e.target.value)}
                       />
@@ -767,15 +791,14 @@ export default function ContributePage() {
 
                     <div className="auth-field">
                       <label className="auth-label" htmlFor="entry-place">
-                        <span>Place / Province</span>
-                        <span className="auth-label-km">ខេត្ត / ទីកន្លែង</span>
+                        <span>{t({ en: 'Place / Province', km: 'ខេត្ត / ទីកន្លែង' })}</span>
                       </label>
                       <input
                         id="entry-place"
                         type="text"
                         maxLength={100}
                         className="auth-input"
-                        placeholder="e.g. Kampong Cham, Siem Reap"
+                        placeholder={t({ en: 'e.g. Kampong Cham, Siem Reap', km: 'ឧ. កំពង់ចាម សៀមរាប' })}
                         value={place}
                         onChange={(e) => setPlace(e.target.value)}
                       />
@@ -790,15 +813,14 @@ export default function ContributePage() {
 
                   <div className="auth-field" style={{ marginBottom: 0 }}>
                     <label className="auth-label" htmlFor="entry-still-believed">
-                      <span>Still Believed Today?</span>
-                      <span className="auth-label-km">តើនៅតែជឿរហូតមកដល់សព្វថ្ងៃ?</span>
+                      <span>{t({ en: 'Still Believed Today?', km: 'តើនៅតែជឿរហូតមកដល់សព្វថ្ងៃ?' })}</span>
                     </label>
                     <input
                       id="entry-still-believed"
                       type="text"
                       maxLength={200}
                       className="auth-input"
-                      placeholder="e.g. Yes, elders still observe this."
+                      placeholder={t({ en: 'e.g. Yes, elders still observe this.', km: 'ឧ. បាទ/ចាស ចាស់ទុំនៅតែប្រតិបត្តិ។' })}
                       value={stillBelieved}
                       onChange={(e) => setStillBelieved(e.target.value)}
                     />
@@ -815,15 +837,15 @@ export default function ContributePage() {
                 <div className="contribute-card">
                   <h3 className="contribute-section-title">
                     <ThemeVibeIcon motif="crown" size={16} />
-                    <span>3. Photo & Media (រូបថត)</span>
+                    <span>3. {t({ en: 'Photo & Media', km: 'រូបថត' })}</span>
                   </h3>
 
                   <div className="auth-field" style={{ marginBottom: 0 }}>
                     <label className="auth-label">
                       <span>
-                        Photo Upload <span style={{ fontSize: '11px', color: 'var(--ink-muted)', fontWeight: 400 }}>(Optional / ជម្រើសបន្ថែម)</span>
+                        {t({ en: 'Photo Upload', km: 'បញ្ចូលរូបថត' })}{' '}
+                        <span style={{ fontSize: '11px', color: 'var(--ink-muted)', fontWeight: 400 }}>({t({ en: 'Optional', km: 'មិនចាំបាច់' })})</span>
                       </span>
-                      <span className="auth-label-km">រូបថត (JPG, PNG, WebP, max 5MB)</span>
                     </label>
 
                     <label
@@ -834,10 +856,10 @@ export default function ContributePage() {
                     >
                       <ThemeVibeIcon motif="moon" size={24} />
                       <div style={{ fontSize: '14px', fontWeight: 600 }}>
-                        {photoFile ? photoFile.name : 'Click to select, drag & drop, or press Ctrl+V to paste image from clipboard'}
+                        {photoFile ? photoFile.name : t({ en: 'Click to select, drag & drop, or press Ctrl+V to paste image from clipboard', km: 'ចុចដើម្បីជ្រើសរើស អូសទម្លាក់ ឬចុច Ctrl+V ដើម្បីបិទភ្ជាប់រូបភាព' })}
                       </div>
                       <div style={{ fontSize: '12px', color: 'var(--ink-muted)' }}>
-                        Allowed: JPG, PNG, WebP • Max 5 MB • Clipboard paste (Ctrl+V) enabled
+                        {t({ en: 'Allowed: JPG, PNG, WebP • Max 5 MB • Clipboard paste (Ctrl+V) enabled', km: 'អនុញ្ញាត៖ JPG, PNG, WebP • អតិបរមា 5 MB • អាចបិទភ្ជាប់ (Ctrl+V)' })}
                       </div>
                       <input
                         id="entry-photo"
@@ -856,22 +878,22 @@ export default function ContributePage() {
                     {photoPreviewUrl && (
                       <div className="photo-attached">
                         <div className="photo-attached-thumb">
-                          <img src={photoPreviewUrl} alt="Attached photo preview" />
+                          <img src={photoPreviewUrl} alt={t({ en: 'Attached photo preview', km: 'មើលរូបថតដែលបានភ្ជាប់' })} />
                         </div>
                         <div className="photo-attached-body">
                           <p className="photo-attached-name">
-                            {photoFile ? photoFile.name : 'Current photo'}
+                            {photoFile ? photoFile.name : t({ en: 'Current photo', km: 'រូបថតបច្ចុប្បន្ន' })}
                           </p>
                           <p className="photo-attached-meta">
                             {photoFile
-                              ? `Cropped to 16:9 • ${(photoFile.size / 1024).toFixed(0)} KB`
-                              : 'Saved with this entry'}
+                              ? `${t({ en: 'Cropped to 16:9', km: 'កាត់ជា ១៦:៩' })} • ${(photoFile.size / 1024).toFixed(0)} KB`
+                              : t({ en: 'Saved with this entry', km: 'រក្សាទុកជាមួយធាតុនេះ' })}
                           </p>
                           <div className="photo-attached-actions">
                             {originalPhotoFile && (
                               <button type="button" className="modal-share" onClick={handleRecrop}>
                                 <ThemeVibeIcon motif="crown" size={12} />
-                                <span>Crop &amp; adjust</span>
+                                <span>{t({ en: 'Crop & adjust', km: 'កាត់ និងកែតម្រូវ' })}</span>
                               </button>
                             )}
                             <button
@@ -879,7 +901,7 @@ export default function ContributePage() {
                               className="modal-share photo-attached-remove"
                               onClick={handleRemovePhoto}
                             >
-                              <span>Remove</span>
+                              <span>{t({ en: 'Remove', km: 'ដកចេញ' })}</span>
                             </button>
                           </div>
                         </div>
@@ -900,10 +922,10 @@ export default function ContributePage() {
                   disabled={loading}
                 >
                   {loading
-                    ? 'Uploading Photo & Saving Entry...'
+                    ? t({ en: 'Uploading photo & saving entry…', km: 'កំពុងបញ្ចូលរូបថត និងរក្សាទុក…' })
                     : editId
-                    ? 'Save Changes / រក្សាទុកការកែប្រែ'
-                    : 'Publish Entry to Archive / បញ្ចូលទិន្នន័យ'}
+                    ? t({ en: 'Save Changes', km: 'រក្សាទុកការកែប្រែ' })
+                    : t({ en: 'Submit for Review', km: 'ដាក់ស្នើដើម្បីពិនិត្យ' })}
                 </button>
               </form>
 
@@ -911,7 +933,7 @@ export default function ContributePage() {
               <div className="sidebar-sticky">
                 <div>
                   <h4 style={{ fontSize: '13px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--ink-muted)', marginBottom: '12px' }}>
-                    Live Entry Card Preview
+                    {t({ en: 'Live Entry Card Preview', km: 'មើលកាតធាតុជាមុន' })}
                   </h4>
                   <EntryPreviewCard
                     title={title}
@@ -927,13 +949,13 @@ export default function ContributePage() {
                 <div className="guidelines-box">
                   <h4 className="guidelines-title">
                     <span>💡</span>
-                    <span>Archive Contribution Tips</span>
+                    <span>{t({ en: 'Archive Contribution Tips', km: 'គន្លឹះសម្រាប់ការរួមចំណែក' })}</span>
                   </h4>
                   <ul className="guidelines-list">
-                    <li>Write real cultural rules passed down from elders or community members.</li>
-                    <li>Both English and Khmer titles are required for searchability.</li>
-                    <li>Upload photos that clearly depict the cultural context or region.</li>
-                    <li>Avoid test text like &quot;asdf&quot;—entries are published directly to the public archive.</li>
+                    <li>{t({ en: 'Write real cultural rules passed down from elders or community members.', km: 'សរសេរក្បួនច្បាប់វប្បធម៌ពិតៗ ដែលបន្តពីចាស់ទុំ ឬសមាជិកសហគមន៍។' })}</li>
+                    <li>{t({ en: 'Both English and Khmer titles are required for searchability.', km: 'ត្រូវការចំណងជើងទាំងភាសាអង់គ្លេស និងខ្មែរ ដើម្បីងាយស្រួលស្វែងរក។' })}</li>
+                    <li>{t({ en: 'Upload photos that clearly depict the cultural context or region.', km: 'បញ្ចូលរូបថតដែលបង្ហាញបរិបទវប្បធម៌ ឬតំបន់បានច្បាស់។' })}</li>
+                    <li>{t({ en: 'Avoid test text like "asdf": every entry is checked by a reviewer before it goes public.', km: 'ជៀសវាងអត្ថបទសាកល្បងដូចជា "asdf"៖ រាល់ធាតុត្រូវបានពិនិត្យដោយអ្នកពិនិត្យ មុននឹងផ្សព្វផ្សាយ។' })}</li>
                   </ul>
                 </div>
               </div>
