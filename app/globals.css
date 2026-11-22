@@ -3017,6 +3017,52 @@ button:hover .kbach-micro {
   line-height: 1.6;
 }
 
+/* "by Name" beside the category tag, on cards and in the entry view. It may
+   shrink (a long name ends in an ellipsis) so the tag and actions keep their
+   room; the full name is in the hover title. */
+/* Delete beside Share in the entry view's top bar: same shape, krama red. */
+.modal-share-danger {
+  color: var(--krama-red-light);
+}
+
+.modal-share-danger:hover:not(:disabled) {
+  border-color: var(--krama-red);
+}
+
+/* Posted / Updated dates in the entry view's footer. */
+.entry-dates {
+  margin: 0;
+  font-size: 12px;
+  color: var(--ink-muted);
+}
+
+/* On a phone the top bar has no room for words: Share, Edit and Delete show
+   their icon only. The word stays as each button's tooltip and accessible
+   name (title / aria-label), so nothing is lost for a screen reader. */
+@media (max-width: 600px) {
+  .modal-nav .modal-action-label {
+    display: none;
+  }
+
+  .modal-nav .modal-share {
+    padding: 7px;
+  }
+}
+
+.entry-author {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 11px;
+  color: var(--ink-muted);
+}
+
+.entry-author strong {
+  font-weight: 600;
+  color: var(--accent);
+}
+
 .entry-card-badge-en {
   font-family: var(--font-serif-title);
   font-size: 10px;
@@ -5543,6 +5589,88 @@ button:hover .kbach-micro {
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--badge-text);
+}
+
+/* --- Entry view on wide or short screens --------------------------------- */
+/* The single column suits a tall screen. On a wide one, or a phone turned on
+   its side, the 16:9 photo and the title filled the whole visible height and
+   everything else sat below the fold while the sides stayed empty. Here the
+   photo moves to a left column and stays put, and the text scrolls beside it.
+   Placed last so it wins over the single-column sizes above. */
+@media (min-width: 900px), (orientation: landscape) and (max-height: 560px) and (min-width: 560px) {
+  .modal-panel {
+    max-width: 1080px;
+  }
+
+  .modal-body {
+    display: grid;
+    grid-template-columns: minmax(0, 5fr) minmax(0, 6fr);
+    column-gap: 24px;
+    align-items: start;
+  }
+
+  /* Everything goes in the right column, in its usual order... */
+  .modal-body > * {
+    grid-column: 2;
+    min-width: 0;
+  }
+
+  /* ...except the photo and title, which take the left column from the top
+     and stick there while the right column scrolls. The span just has to
+     cover every row the right column uses. */
+  .modal-body > .modal-media {
+    grid-column: 1;
+    grid-row: 1 / span 20;
+    position: sticky;
+    top: 0;
+  }
+
+  .modal-media .modal-photo,
+  .modal-media .modal-photo-placeholder {
+    max-width: none;
+    max-height: none;
+    margin: 0 0 14px;
+  }
+
+  /* Title sits under the photo, so the right column opens on the belief. */
+  .modal-media .modal-heading {
+    max-width: none;
+  }
+
+  /* The divider separates the title from the text below it. With the title
+     moved to the left column it would only be a stray line at the top. */
+  .modal-body > .kbach-divider {
+    display: none;
+  }
+
+  /* The right column is narrower than the old panel, so the belief and origin
+     panels stack rather than squeeze side by side. */
+  .modal-panels {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* A phone on its side is very short: give the panel nearly all the height
+   rather than losing a quarter of it to margins. */
+@media (orientation: landscape) and (max-height: 560px) {
+  .modal-overlay {
+    padding: 8px 16px;
+  }
+
+  .modal-panel {
+    max-height: 96vh;
+  }
+
+  .modal-body {
+    padding: 14px 16px;
+  }
+
+  /* Photo plus title can be taller than this short screen. Stuck in place,
+     the bottom of the title could never be scrolled into view, so here the
+     left column scrolls along with the right one. */
+  .modal-body > .modal-media {
+    position: static;
+  }
 }
 
 

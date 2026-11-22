@@ -33,7 +33,12 @@ export default function EntryListRow({ entry, onSelect, actions = null, children
       role="button"
       tabIndex={0}
       aria-label={`${entry.title} — ${t({ en: 'open full entry', km: 'មើលធាតុពេញ' })}`}
-      onClick={(e) => { if (!e.target.closest('.entry-list-actions')) onSelect(entry); }}
+      // React passes clicks from the delete confirmation (drawn in <body>) up
+      // through this row, so only clicks physically inside the row count.
+      onClick={(e) => {
+        if (!e.currentTarget.contains(e.target)) return;
+        if (!e.target.closest('.entry-list-actions')) onSelect(entry);
+      }}
       onKeyDown={(e) => {
         if (e.target === e.currentTarget && (e.key === 'Enter' || e.key === ' ')) {
           e.preventDefault();

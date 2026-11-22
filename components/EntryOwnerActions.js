@@ -7,17 +7,22 @@ import { createClient } from '../lib/supabase/client';
 
 import DeleteConfirmModal from './DeleteConfirmModal';
 import { useLanguage } from './LanguageProvider';
+import { EditIcon, DeleteIcon } from './ActionIcons';
 
 // `knownOwner` is for pages that already know the viewer owns the entry (My
 // Entries lists only the viewer's own), so a list of twenty rows does not make
 // twenty separate "who is signed in?" requests. The database policies still
 // decide whether the edit or delete is allowed.
-export default function EntryOwnerActions({ entryId, ownerId, entryTitle = 'this entry', onClose, knownOwner = false }) {
+// `compact` draws the buttons in the entry view's top bar style, beside Share;
+// on a phone their text hides and the icon remains (see .modal-action-label).
+export default function EntryOwnerActions({ entryId, ownerId, entryTitle = 'this entry', onClose, knownOwner = false, compact = false }) {
   const [currentUser, setCurrentUser] = useState(null);
   const [deleting, setDeleting] = useState(false);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [isReviewer, setIsReviewer] = useState(false);
   const { t } = useLanguage();
+  const editLabel = t({ en: 'Edit', km: 'កែប្រែ' });
+  const deleteLabel = t({ en: 'Delete', km: 'លុប' });
 
   useEffect(() => {
     if (knownOwner) return;
@@ -97,18 +102,24 @@ export default function EntryOwnerActions({ entryId, ownerId, entryTitle = 'this
       <div className="entry-owner-actions" style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
         <Link
           href={`/contribute?edit=${entryId}`}
-          className="btn btn-secondary"
+          className={compact ? 'modal-share' : 'btn btn-secondary'}
           onClick={() => onClose && onClose()}
+          title={editLabel}
+          aria-label={editLabel}
         >
-          {t({ en: 'Edit Entry', km: 'កែប្រែ' })}
+          <EditIcon />
+          <span className="modal-action-label">{editLabel}</span>
         </Link>
         <button
           type="button"
-          className="btn btn-danger"
+          className={compact ? 'modal-share modal-share-danger' : 'btn btn-danger'}
           onClick={() => setShowConfirmModal(true)}
           disabled={deleting}
+          title={deleteLabel}
+          aria-label={deleteLabel}
         >
-          {t({ en: 'Delete', km: 'លុប' })}
+          <DeleteIcon />
+          <span className="modal-action-label">{deleteLabel}</span>
         </button>
       </div>
 

@@ -290,6 +290,11 @@ ON CONFLICT (id) DO NOTHING;
 -- the reviewer sees what changed instead of re-reading it from scratch.
 ALTER TABLE public.entries ADD COLUMN IF NOT EXISTS previous_version JSONB;
 
+-- When the entry's content last changed, shown as "Updated" in the entry view.
+-- Set by the same trigger below, and only for a change to what the entry says:
+-- an approval or a return touches status, not content, and is not an update.
+ALTER TABLE public.entries ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ;
+
 -- Written by a trigger, not by the page: the author is allowed to update their
 -- own row, so a value the page sent could be blanked or forged to hide what
 -- was changed. Here the database decides, and ignores whatever was sent.
@@ -299,10 +304,24 @@ LANGUAGE plpgsql
 SET search_path = ''
 AS $$
 BEGIN
-  -- A brand-new entry has no earlier version, whatever the request says.
+  -- A brand-new entry has no earlier version and has never been updated,
+  -- whatever the request says.
   IF TG_OP = 'INSERT' THEN
     NEW.previous_version := NULL;
+    NEW.updated_at := NULL;
     RETURN NEW;
+  END IF;
+
+  -- Stamped here when the content changed, kept as it was otherwise; a value
+  -- sent by the page is never used.
+  IF (NEW.title, NEW.title_km, NEW.category, NEW.description, NEW.reason,
+      NEW.still_believed, NEW.place, NEW.contributor, NEW.photo_url)
+     IS DISTINCT FROM
+     (OLD.title, OLD.title_km, OLD.category, OLD.description, OLD.reason,
+      OLD.still_believed, OLD.place, OLD.contributor, OLD.photo_url) THEN
+    NEW.updated_at := now();
+  ELSE
+    NEW.updated_at := OLD.updated_at;
   END IF;
 
   IF OLD.status = 'published' AND NEW.status = 'pending' THEN

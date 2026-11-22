@@ -1,5 +1,6 @@
 'use client';
 
+import { createPortal } from "react-dom";
 import { ThemeVibeIcon } from "./KbachMotifs";
 import { useLanguage } from "./LanguageProvider";
 
@@ -13,7 +14,10 @@ export default function DeleteConfirmModal({
   const { t } = useLanguage();
   if (!isOpen) return null;
 
-  return (
+  // Rendered straight into <body>: the Delete button can sit inside the entry
+  // view's top bar, and drawn there the confirmation could end up underneath
+  // the view's own footer. Only ever opened by a click, so document exists.
+  return createPortal(
     <div
       className="modal-overlay"
       style={{ zIndex: 1100, backgroundColor: 'rgba(0, 0, 0, 0.75)', backdropFilter: 'blur(6px)' }}
@@ -70,6 +74,7 @@ export default function DeleteConfirmModal({
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

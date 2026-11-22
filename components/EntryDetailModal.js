@@ -9,6 +9,7 @@ import {
 } from "./KbachMotifs";
 import EntryOwnerActions from "./EntryOwnerActions";
 import SubmittedBy from "./SubmittedBy";
+import EntryDates from "./EntryDates";
 import { useLanguage } from "./LanguageProvider";
 
 // Same vocabulary as the cards, so an entry reads identically in both places.
@@ -76,9 +77,10 @@ function PersonIcon() {
   );
 }
 
-// `actions`, when a page passes it, replaces the owner/admin Edit and Delete
-// buttons in the footer, e.g. Approve / Return for a pending entry. `notice`
-// is shown at the top of the body, e.g. what an edit changed.
+// `actions`, when a page passes it, goes in the footer above the dates, e.g.
+// Approve / Return for a pending entry. Edit and Delete live in the top bar
+// beside Share. `notice` is shown at the top of the body, e.g. what an edit
+// changed.
 export default function EntryDetailModal({ entry, onClose, shareHref, actions = null, notice = null }) {
   // Result of the last copy attempt: "link" | "failed" | null.
   const [copied, setCopied] = useState(null);
@@ -204,24 +206,35 @@ export default function EntryDetailModal({ entry, onClose, shareHref, actions = 
               <ThemeVibeIcon motif={motif} size={11} />
               <span className="modal-category-km">{t({ en: meta.labelEn, km: meta.labelKm })}</span>
             </span>
+            <SubmittedBy name={entry.submittedBy} />
           </span>
 
           <div className="modal-nav-actions">
-            <button
-              type="button"
-              className="modal-share"
-              onClick={handleShare}
-              title={t({ en: "Copy a link to this entry", km: "ចម្លងតំណទៅកាន់ធាតុនេះ" })}
-            >
-              {copied === "link" ? <CheckIcon /> : <ShareIcon />}
-              <span>
-                {copied === "link"
-                  ? t({ en: "Copied", km: "បានចម្លង" })
-                  : copied === "failed"
-                    ? t({ en: "Failed", km: "បរាជ័យ" })
-                    : t({ en: "Share", km: "ចែករំលែក" })}
-              </span>
-            </button>
+            {/* Only where there is a public link to copy: My Entries and the
+                admin page pass none, and a Share that does nothing is a trap. */}
+            {shareUrl && (
+              <button
+                type="button"
+                className="modal-share"
+                onClick={handleShare}
+                title={t({ en: "Copy a link to this entry", km: "ចម្លងតំណទៅកាន់ធាតុនេះ" })}
+                aria-label={t({ en: "Share", km: "ចែករំលែក" })}
+              >
+                {copied === "link" ? <CheckIcon /> : <ShareIcon />}
+                <span className="modal-action-label">
+                  {copied === "link"
+                    ? t({ en: "Copied", km: "បានចម្លង" })
+                    : copied === "failed"
+                      ? t({ en: "Failed", km: "បរាជ័យ" })
+                      : t({ en: "Share", km: "ចែករំលែក" })}
+                </span>
+              </button>
+            )}
+
+            {/* Edit and Delete, for the author or an admin; renders nothing
+                for anyone else. */}
+            <EntryOwnerActions entryId={entry.id} ownerId={entry.owner} entryTitle={entry.title}
+              onClose={onClose} compact />
 
             <button
               type="button"
@@ -237,6 +250,9 @@ export default function EntryDetailModal({ entry, onClose, shareHref, actions = 
 
         <div className="modal-body">
           {notice}
+          {/* Photo and title travel together: one block above the text on a
+              tall screen, the left column on a wide one (see globals.css). */}
+          <div className="modal-media">
           {entry.photo_url ? (
             <div className="modal-photo">
               <img src={entry.photo_url} alt={entry.title} />
@@ -265,6 +281,7 @@ export default function EntryDetailModal({ entry, onClose, shareHref, actions = 
               </span>
             </div>
             <h3 className="modal-title">{entry.title}</h3>
+          </div>
           </div>
 
           <KbachDivider />
@@ -312,7 +329,6 @@ export default function EntryDetailModal({ entry, onClose, shareHref, actions = 
               <div>
                 <p className="modal-contributor-role">{t({ en: "Contributor", km: "អ្នករួមចំណែក" })}</p>
                 <p className="modal-contributor-name">{entry.contributor}</p>
-                <SubmittedBy name={entry.submittedBy} />
               </div>
             </div>
 
@@ -320,10 +336,13 @@ export default function EntryDetailModal({ entry, onClose, shareHref, actions = 
           </div>
         </div>
 
-        <div className="modal-footer" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
-          {actions ?? (
-            <EntryOwnerActions entryId={entry.id} ownerId={entry.owner} entryTitle={entry.title} onClose={onClose} />
-          )}
+        {/* The dates, plus any decision a page adds (Approve / Return on the
+            admin page, which needs the width for its note box). */}
+        <div className="modal-footer" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', gap: '12px' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', flex: 1, minWidth: 0 }}>
+            {actions}
+            <EntryDates createdAt={entry.created_at} updatedAt={entry.updated_at} />
+          </div>
           <button type="button" className="btn btn-secondary modal-footer-close" onClick={onClose}>
             {t({ en: "Close", km: "បិទ" })}
           </button>

@@ -96,6 +96,7 @@ export default function EntryCard({ entry, onSelect, actions = null }) {
             <ThemeVibeIcon motif={motif} size={11} />
             <span className="entry-card-badge-km">{categoryLabel}</span>
           </span>
+          <SubmittedBy name={entry.submittedBy} />
 
           <span className="entry-card-actions">{actions}</span>
         </div>
@@ -129,8 +130,6 @@ export default function EntryCard({ entry, onSelect, actions = null }) {
           <strong>{t({ en: 'Traditional belief', km: 'ជំនឿប្រពៃណី' })}: </strong>
           {entry.description}
         </p>
-
-        <SubmittedBy name={entry.submittedBy} />
 
         <div className="entry-card-footer">
           <span className="entry-card-place">

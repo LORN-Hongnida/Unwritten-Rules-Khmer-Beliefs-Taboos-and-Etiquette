@@ -40,6 +40,7 @@ export function normalizeEntry(item) {
     status: item.status || 'pending',
     owner: item.owner,
     created_at: item.created_at,
+    updated_at: item.updated_at ?? null,
   };
 }
 
