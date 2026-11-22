@@ -1,8 +1,22 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { createClient } from '../lib/supabase/client';
 import collection from '../collection.config.js';
+import { useLanguage } from './LanguageProvider';
+
+// Which language an entry's "Traditional belief" is written in, by counting
+// Khmer letters against Latin ones. Counting rather than "contains any Khmer"
+// keeps an English text that quotes one Khmer word counted as English.
+// Falls back to the English title when there is no description.
+const KHMER = /[ក-៿]/g;
+const LATIN = /[A-Za-z]/g;
+export function writtenIn(entry) {
+  const text = entry.description || entry.title || '';
+  const khmer = (text.match(KHMER) || []).length;
+  const latin = (text.match(LATIN) || []).length;
+  return khmer > latin ? 'km' : 'en';
+}
 
 // One query for every submitter on the page, not one per card. If the lookup
 // fails (or the profiles table is not there yet) the archive still loads; the
@@ -93,5 +107,16 @@ export default function useEntries() {
     fetchEntries();
   }, []);
 
-  return { entries, loading };
+  // Entries written in the reader's language come first; within each group
+  // the newest-first order from the database is kept (the sort is stable).
+  // Recomputed when the toggle changes, without fetching again.
+  const { language } = useLanguage();
+  const ordered = useMemo(
+    () => [...entries].sort(
+      (a, b) => (writtenIn(a) === language ? 0 : 1) - (writtenIn(b) === language ? 0 : 1)
+    ),
+    [entries, language]
+  );
+
+  return { entries: ordered, loading };
 }
