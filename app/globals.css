@@ -24,8 +24,11 @@
   /* Display role. Latin text is all Plus Jakarta Sans: the display face and
      the body face are the same family at different weights, which keeps the
      type system to two families including Khmer. */
-  --font-serif-title: 'Plus Jakarta Sans', sans-serif;
-  --font-serif-body: 'Plus Jakarta Sans', sans-serif;
+  /* Kantumruy Pro second: Plus Jakarta Sans has no Khmer glyphs, so in Khmer
+     mode the browser takes each Khmer character from Kantumruy Pro instead of
+     whatever the system happens to have. Latin text is unaffected. */
+  --font-serif-title: 'Plus Jakarta Sans', 'Kantumruy Pro', sans-serif;
+  --font-serif-body: 'Plus Jakarta Sans', 'Kantumruy Pro', sans-serif;
   --font-sans-khmer: 'Kantumruy Pro', 'Noto Serif Khmer', serif;
 
   /* Gold & Teak base tokens. Per-theme values are set by the theme
@@ -1877,6 +1880,20 @@ textarea::placeholder {
   transform: scaleX(-1);
 }
 
+/* In Khmer mode this top line holds the English title instead. Latin text at
+   the Khmer size reads as a second headline competing with the main one, so
+   it steps down to a supporting line. */
+.hero-khmer-title h2:lang(en) {
+  font-family: var(--font-serif-title);
+  font-size: clamp(17px, 2.8vw, 26px);
+  line-height: 1.3;
+}
+
+.hero-khmer-subtitle:lang(en) {
+  font-family: var(--font-serif-body);
+  font-size: clamp(14px, 1.8vw, 17px);
+}
+
 .hero-khmer-subtitle {
   margin: 0 0 22px;
   font-family: var(--font-sans-khmer);
@@ -2327,6 +2344,27 @@ button:hover .kbach-micro {
   transition: border-color 0.7s ease, background-color 0.7s ease,
     color 0.7s ease, opacity 0.3s ease;
 }
+.site-nav-lang-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 999px;
+  border: 1px solid var(--card-border);
+  background-color: var(--input-bg);
+  color: var(--accent);
+  font-family: var(--font-serif-title);
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: border-color 0.7s ease, background-color 0.7s ease, color 0.7s ease;
+}
+.site-nav-lang-toggle:hover {
+  border-color: var(--accent);
+  background-color: var(--accent-glow);
+}
+
 
 .site-nav-mode-toggle:hover {
   opacity: 0.9;
@@ -3363,6 +3401,9 @@ button:hover .kbach-micro {
   max-height: min(88vh, 760px);
   margin: auto;
   overflow: hidden;
+  /* Inherited by everything in the panel: a long unbroken title, contributor
+     or name wraps instead of being clipped at the edge. */
+  overflow-wrap: anywhere;
   border-radius: 16px;
   border: 2px solid var(--modal-border);
   background-color: var(--surface);
@@ -3853,21 +3894,158 @@ button:hover .kbach-micro {
 
 .modal-footer-close {
   /* Keeps Close hard right whether or not the owner controls render — the
-     footer is space-between, so a lone child would otherwise sit left. */
+     footer is space-between, so a lone child would otherwise sit left. Its
+     look comes from .btn .btn-secondary. */
   margin-left: auto;
-  padding: 10px 24px;
+}
+
+/* --- Buttons -------------------------------------------------------------- */
+/* One family for every action button on cards and in the entry view, built on
+   the same tokens as Sign In and the filter pills, so they follow the theme.
+   primary   = the action a screen is for (Approve, Confirm)
+   secondary = everything else (View, Edit, Cancel, Close)
+   danger    = cannot be quietly undone (Return, Delete) */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 9px 18px;
   border-radius: 12px;
-  border: 1px solid var(--pill-active-border);
-  background-color: var(--pill-active-bg);
-  color: var(--pill-active-text);
+  border: 1px solid transparent;
   font-family: var(--font-serif-title);
   font-size: 13px;
   font-weight: 700;
+  line-height: 1.2;
+  white-space: nowrap;
+  text-decoration: none;
   cursor: pointer;
-  transition: opacity 0.2s ease;
+  transition: transform 0.2s ease, filter 0.2s ease, background-color 0.3s ease,
+    border-color 0.3s ease, color 0.3s ease;
 }
 
-.modal-footer-close:hover { opacity: 0.92; }
+.btn:hover:not(:disabled) { transform: translateY(-1px); }
+
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.btn-primary {
+  background-color: var(--pill-active-bg);
+  border-color: var(--pill-active-border);
+  color: var(--pill-active-text);
+}
+
+.btn-primary:hover:not(:disabled) { filter: brightness(1.1); }
+
+.btn-secondary {
+  background-color: var(--input-bg);
+  border-color: var(--card-border);
+  color: var(--ink);
+}
+
+.btn-secondary:hover:not(:disabled) {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.btn-danger {
+  background-color: transparent;
+  border-color: var(--krama-red);
+  color: var(--krama-red-light);
+}
+
+.btn-danger:hover:not(:disabled) {
+  background-color: var(--krama-red);
+  color: #fff;
+}
+
+/* --- List view (My Entries, admin page) ----------------------------------- */
+/* The compact alternative to the card grid: one row per entry, on the same
+   surface and border as the search box so the two views share a palette. */
+.entry-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.entry-list-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 16px;
+  border: 1px solid var(--card-border);
+  border-radius: 12px;
+  background-color: var(--input-bg);
+  cursor: pointer;
+  overflow-wrap: anywhere;
+  transition: border-color 0.3s ease;
+}
+
+.entry-list-row:hover,
+.entry-list-row:focus-visible { border-color: var(--accent); }
+
+.entry-list-icon {
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 999px;
+  border: 1px solid var(--card-border);
+  color: var(--accent);
+}
+
+.entry-list-main {
+  flex: 1;
+  min-width: 0;
+}
+
+.entry-list-title {
+  margin: 0;
+  font-family: var(--font-serif-title);
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.entry-list-title-km {
+  margin: 2px 0 0;
+  font-size: 13px;
+  color: var(--ink-muted);
+}
+
+.entry-list-meta {
+  margin: 4px 0 0;
+  font-size: 11px;
+  color: var(--ink-muted);
+}
+
+.entry-list-main .my-entry-note,
+.entry-list-main .entry-status-badge { margin-top: 8px; }
+
+.entry-list-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+/* On a phone the buttons drop under the text instead of squeezing it. */
+@media (max-width: 600px) {
+  .entry-list-row { flex-wrap: wrap; }
+  .entry-list-actions { width: 100%; }
+}
+
+/* The one irreversible confirm: filled red, not just outlined. */
+.btn-danger-solid {
+  background-color: var(--krama-red);
+  border-color: var(--krama-red);
+  color: #fff;
+}
+
+.btn-danger-solid:hover:not(:disabled) { filter: brightness(1.1); }
 
 @media (prefers-reduced-motion: reduce) {
   .modal-overlay,
@@ -4680,9 +4858,7 @@ button:hover .kbach-micro {
   padding: 12px;
   border-radius: 16px;
   border: 1px solid var(--modal-border);
-  background-color: var(--modal-bg);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  background: var(--modal-bg);
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
   z-index: 50;
 }

@@ -6,13 +6,21 @@ import { useRouter } from 'next/navigation';
 import { createClient } from '../lib/supabase/client';
 
 import DeleteConfirmModal from './DeleteConfirmModal';
+import { useLanguage } from './LanguageProvider';
 
-export default function EntryOwnerActions({ entryId, ownerId, entryTitle = 'this entry', onClose }) {
+// `knownOwner` is for pages that already know the viewer owns the entry (My
+// Entries lists only the viewer's own), so a list of twenty rows does not make
+// twenty separate "who is signed in?" requests. The database policies still
+// decide whether the edit or delete is allowed.
+export default function EntryOwnerActions({ entryId, ownerId, entryTitle = 'this entry', onClose, knownOwner = false }) {
   const [currentUser, setCurrentUser] = useState(null);
   const [deleting, setDeleting] = useState(false);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [isReviewer, setIsReviewer] = useState(false);
+  const { t } = useLanguage();
 
   useEffect(() => {
+    if (knownOwner) return;
     let isMounted = true;
     const supabase = createClient();
 
@@ -23,6 +31,13 @@ export default function EntryOwnerActions({ entryId, ownerId, entryTitle = 'this
         // an auth problem is invisible.
         if (error) console.error('Could not resolve the signed-in user:', error);
         if (isMounted) setCurrentUser(user);
+        // Reviewers are the site's admins and manage every entry. This only
+        // decides whether the buttons show; the database policies are what
+        // actually allow or refuse the edit and delete.
+        if (user) {
+          const { data: reviewer } = await supabase.rpc('is_reviewer');
+          if (isMounted) setIsReviewer(reviewer === true);
+        }
       } catch (err) {
         console.error('Could not resolve the signed-in user:', err);
       }
@@ -41,7 +56,8 @@ export default function EntryOwnerActions({ entryId, ownerId, entryTitle = 'this
     };
   }, []);
 
-  if (!currentUser || !ownerId || currentUser.id !== ownerId) {
+  const isOwner = currentUser && ownerId && currentUser.id === ownerId;
+  if (!knownOwner && (!currentUser || (!isOwner && !isReviewer))) {
     return null;
   }
 
@@ -57,7 +73,7 @@ export default function EntryOwnerActions({ entryId, ownerId, entryTitle = 'this
 
       if (error || !data || data.length === 0) {
         console.error('Delete refused or failed:', error);
-        alert("That change wasn't saved");
+        alert(t({ en: "That change wasn't saved", km: 'ការផ្លាស់ប្តូរនោះមិនត្រូវបានរក្សាទុកទេ' }));
         setDeleting(false);
         setShowConfirmModal(false);
         return;
@@ -65,10 +81,12 @@ export default function EntryOwnerActions({ entryId, ownerId, entryTitle = 'this
 
       setShowConfirmModal(false);
       if (onClose) onClose();
-      window.location.href = '/browse';
+      // Stay on whichever page the delete happened on (Browse, My Entries or
+      // the admin page) and reload it, so the deleted entry is gone from it.
+      window.location.reload();
     } catch (err) {
       console.error('Delete error:', err);
-      alert("That change wasn't saved");
+      alert(t({ en: "That change wasn't saved", km: 'ការផ្លាស់ប្តូរនោះមិនត្រូវបានរក្សាទុកទេ' }));
       setDeleting(false);
       setShowConfirmModal(false);
     }
@@ -79,38 +97,18 @@ export default function EntryOwnerActions({ entryId, ownerId, entryTitle = 'this
       <div className="entry-owner-actions" style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
         <Link
           href={`/contribute?edit=${entryId}`}
-          className="owner-btn-edit"
+          className="btn btn-secondary"
           onClick={() => onClose && onClose()}
-          style={{
-            padding: '6px 12px',
-            borderRadius: '6px',
-            fontSize: '12px',
-            fontWeight: 600,
-            color: 'var(--accent)',
-            border: '1px solid var(--accent)',
-            textDecoration: 'none',
-            cursor: 'pointer'
-          }}
         >
-          Edit Entry / <span className="btn-label-km" lang="km">កែប្រែ</span>
+          {t({ en: 'Edit Entry', km: 'កែប្រែ' })}
         </Link>
         <button
           type="button"
-          className="owner-btn-delete"
+          className="btn btn-danger"
           onClick={() => setShowConfirmModal(true)}
           disabled={deleting}
-          style={{
-            padding: '6px 12px',
-            borderRadius: '6px',
-            fontSize: '12px',
-            fontWeight: 600,
-            color: 'var(--krama-red, #a44a38)',
-            border: '1px solid var(--krama-red, #a44a38)',
-            background: 'transparent',
-            cursor: deleting ? 'not-allowed' : 'pointer'
-          }}
         >
-          Delete / <span className="btn-label-km" lang="km">លុប</span>
+          {t({ en: 'Delete', km: 'លុប' })}
         </button>
       </div>
 

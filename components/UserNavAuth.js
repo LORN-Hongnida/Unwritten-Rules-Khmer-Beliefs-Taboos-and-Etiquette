@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { createClient } from '../lib/supabase/client';
+import { useLanguage } from './LanguageProvider';
 
 function withTheme(href, theme) {
   return theme === 'all' ? href : `${href}?theme=${theme}`;
@@ -12,6 +13,7 @@ function withTheme(href, theme) {
 export default function UserNavAuth({ selectedTheme = 'all', onNavClick }) {
   const [user, setUser] = useState(null);
   const [isReviewer, setIsReviewer] = useState(false);
+  const { t } = useLanguage();
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef(null);
   const pathname = usePathname();
@@ -95,7 +97,7 @@ export default function UserNavAuth({ selectedTheme = 'all', onNavClick }) {
           type="button"
           className="user-menu-trigger"
           onClick={() => setIsOpen((open) => !open)}
-          title="Account options"
+          title={t({ en: 'Account options', km: 'ជម្រើសគណនី' })}
           aria-expanded={isOpen}
           aria-haspopup="true"
         >
@@ -103,7 +105,7 @@ export default function UserNavAuth({ selectedTheme = 'all', onNavClick }) {
             {avatarUrl ? (
               <img
                 src={avatarUrl}
-                alt="Contributor avatar"
+                alt={t({ en: 'Contributor avatar', km: 'រូបតំណាងអ្នករួមចំណែក' })}
                 style={{ width: '100%', height: '100%', objectFit: 'cover' }}
               />
             ) : (
@@ -115,7 +117,9 @@ export default function UserNavAuth({ selectedTheme = 'all', onNavClick }) {
         {isOpen && (
           <div className="user-menu-dropdown" role="menu">
             <div className="user-menu-info">
-              <div className="user-menu-role">Contributor</div>
+              <div className="user-menu-role">{isReviewer
+                ? t({ en: 'Admin · Reviewer', km: 'អ្នកគ្រប់គ្រង · អ្នកពិនិត្យ' })
+                : t({ en: 'Contributor', km: 'អ្នករួមចំណែក' })}</div>
               <div className="user-menu-email" title={user.email}>
                 {user.email}
               </div>
@@ -133,8 +137,7 @@ export default function UserNavAuth({ selectedTheme = 'all', onNavClick }) {
                 if (onNavClick) onNavClick();
               }}
             >
-              <span>My Entries</span>
-              <span lang="km">ធាតុរបស់ខ្ញុំ</span>
+              <span>{t({ en: 'My Entries', km: 'ធាតុរបស់ខ្ញុំ' })}</span>
             </Link>
 
             {isReviewer && (
@@ -147,8 +150,7 @@ export default function UserNavAuth({ selectedTheme = 'all', onNavClick }) {
                   if (onNavClick) onNavClick();
                 }}
               >
-                <span>Review Queue</span>
-                <span lang="km">ការពិនិត្យធាតុ</span>
+                <span>{t({ en: 'Admin', km: 'ផ្ទាំងគ្រប់គ្រង' })}</span>
               </Link>
             )}
 
@@ -158,8 +160,7 @@ export default function UserNavAuth({ selectedTheme = 'all', onNavClick }) {
               className="user-menu-logout"
               onClick={handleLogout}
             >
-              <span>Log out</span>
-              <span lang="km">ចាកចេញ</span>
+              <span>{t({ en: 'Log out', km: 'ចាកចេញ' })}</span>
             </button>
           </div>
         )}
@@ -174,7 +175,7 @@ export default function UserNavAuth({ selectedTheme = 'all', onNavClick }) {
       aria-current={pathname === '/login' ? 'page' : undefined}
       onClick={onNavClick}
     >
-      Sign In
+      {t({ en: 'Sign In', km: 'ចូលគណនី' })}
     </Link>
   );
 }

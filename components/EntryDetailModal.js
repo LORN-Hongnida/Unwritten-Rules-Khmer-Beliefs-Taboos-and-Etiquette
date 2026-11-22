@@ -8,6 +8,8 @@ import {
   ThemeVibeIcon,
 } from "./KbachMotifs";
 import EntryOwnerActions from "./EntryOwnerActions";
+import SubmittedBy from "./SubmittedBy";
+import { useLanguage } from "./LanguageProvider";
 
 // Same vocabulary as the cards, so an entry reads identically in both places.
 const CATEGORY_META = {
@@ -74,9 +76,13 @@ function PersonIcon() {
   );
 }
 
-export default function EntryDetailModal({ entry, onClose, shareHref }) {
+// `actions`, when a page passes it, replaces the owner/admin Edit and Delete
+// buttons in the footer, e.g. Approve / Return for a pending entry. `notice`
+// is shown at the top of the body, e.g. what an edit changed.
+export default function EntryDetailModal({ entry, onClose, shareHref, actions = null, notice = null }) {
   // Result of the last copy attempt: "link" | "failed" | null.
   const [copied, setCopied] = useState(null);
+  const { t } = useLanguage();
   const panelRef = useRef(null);
   const previouslyFocused = useRef(null);
 
@@ -196,11 +202,8 @@ export default function EntryDetailModal({ entry, onClose, shareHref }) {
           <span className="modal-category-group">
             <span className="modal-category">
               <ThemeVibeIcon motif={motif} size={11} />
-              <span className="modal-category-km" lang="km">
-                {meta.labelKm}
-              </span>
+              <span className="modal-category-km">{t({ en: meta.labelEn, km: meta.labelKm })}</span>
             </span>
-            <span className="modal-category-en">{meta.labelEn}</span>
           </span>
 
           <div className="modal-nav-actions">
@@ -208,15 +211,15 @@ export default function EntryDetailModal({ entry, onClose, shareHref }) {
               type="button"
               className="modal-share"
               onClick={handleShare}
-              title="Copy a link to this entry"
+              title={t({ en: "Copy a link to this entry", km: "ចម្លងតំណទៅកាន់ធាតុនេះ" })}
             >
               {copied === "link" ? <CheckIcon /> : <ShareIcon />}
               <span>
                 {copied === "link"
-                  ? "Copied"
+                  ? t({ en: "Copied", km: "បានចម្លង" })
                   : copied === "failed"
-                    ? "Failed"
-                    : "Share"}
+                    ? t({ en: "Failed", km: "បរាជ័យ" })
+                    : t({ en: "Share", km: "ចែករំលែក" })}
               </span>
             </button>
 
@@ -224,8 +227,8 @@ export default function EntryDetailModal({ entry, onClose, shareHref }) {
               type="button"
               className="modal-close"
               onClick={onClose}
-              title="Close (Esc)"
-              aria-label="Close"
+              title={t({ en: "Close (Esc)", km: "បិទ (Esc)" })}
+              aria-label={t({ en: "Close", km: "បិទ" })}
             >
               <CloseIcon />
             </button>
@@ -233,6 +236,7 @@ export default function EntryDetailModal({ entry, onClose, shareHref }) {
         </div>
 
         <div className="modal-body">
+          {notice}
           {entry.photo_url ? (
             <div className="modal-photo">
               <img src={entry.photo_url} alt={entry.title} />
@@ -242,7 +246,7 @@ export default function EntryDetailModal({ entry, onClose, shareHref }) {
               <div className="modal-photo-placeholder-inner">
                 <ThemeVibeIcon motif={motif} size={48} />
                 <span className="modal-photo-placeholder-label">
-                  {meta.labelKm} — {meta.labelEn}
+                  {t({ en: meta.labelEn, km: meta.labelKm })}
                 </span>
               </div>
             </div>
@@ -274,7 +278,7 @@ export default function EntryDetailModal({ entry, onClose, shareHref }) {
                 <span className="modal-panel-icon" aria-hidden="true">
                   <ThemeVibeIcon motif={motif} size={16} />
                 </span>
-                <h4>Stated Traditional Belief</h4>
+                <h4>{t({ en: "Stated Traditional Belief", km: "ជំនឿប្រពៃណីដែលបានលើកឡើង" })}</h4>
               </div>
               <p className="modal-panel-text">{entry.description}</p>
             </section>
@@ -288,7 +292,7 @@ export default function EntryDetailModal({ entry, onClose, shareHref }) {
                   <span className="modal-panel-icon" aria-hidden="true">
                     <ThemeVibeIcon motif={motif} size={16} />
                   </span>
-                  <h4>Practical Origin</h4>
+                  <h4>{t({ en: "Practical Origin", km: "ប្រភពដើមជាក់ស្តែង" })}</h4>
                 </div>
                 <p className="modal-panel-text">{entry.reason}</p>
               </section>
@@ -296,7 +300,7 @@ export default function EntryDetailModal({ entry, onClose, shareHref }) {
           </div>
 
           <section className="modal-belief-status">
-            <h4>Still believed today?</h4>
+            <h4>{t({ en: "Still believed today?", km: "នៅតែជឿសព្វថ្ងៃ?" })}</h4>
             <p>{entry.stillBelieved}</p>
           </section>
 
@@ -306,8 +310,9 @@ export default function EntryDetailModal({ entry, onClose, shareHref }) {
                 <PersonIcon />
               </span>
               <div>
-                <p className="modal-contributor-role">Contributor</p>
+                <p className="modal-contributor-role">{t({ en: "Contributor", km: "អ្នករួមចំណែក" })}</p>
                 <p className="modal-contributor-name">{entry.contributor}</p>
+                <SubmittedBy name={entry.submittedBy} />
               </div>
             </div>
 
@@ -315,10 +320,12 @@ export default function EntryDetailModal({ entry, onClose, shareHref }) {
           </div>
         </div>
 
-        <div className="modal-footer" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <EntryOwnerActions entryId={entry.id} ownerId={entry.owner} entryTitle={entry.title} onClose={onClose} />
-          <button type="button" className="modal-footer-close" onClick={onClose}>
-            Close • <span className="btn-label-km" lang="km">បិទ</span>
+        <div className="modal-footer" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+          {actions ?? (
+            <EntryOwnerActions entryId={entry.id} ownerId={entry.owner} entryTitle={entry.title} onClose={onClose} />
+          )}
+          <button type="button" className="btn btn-secondary modal-footer-close" onClick={onClose}>
+            {t({ en: "Close", km: "បិទ" })}
           </button>
         </div>
       </div>

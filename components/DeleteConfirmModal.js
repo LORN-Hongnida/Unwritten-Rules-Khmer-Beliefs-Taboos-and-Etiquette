@@ -1,6 +1,7 @@
 'use client';
 
 import { ThemeVibeIcon } from "./KbachMotifs";
+import { useLanguage } from "./LanguageProvider";
 
 export default function DeleteConfirmModal({
   isOpen,
@@ -9,6 +10,7 @@ export default function DeleteConfirmModal({
   onCancel,
   loading
 }) {
+  const { t } = useLanguage();
   if (!isOpen) return null;
 
   return (
@@ -38,45 +40,33 @@ export default function DeleteConfirmModal({
         </div>
 
         <h3 id="delete-modal-title" style={{ fontFamily: 'var(--font-serif-title)', fontSize: '20px', margin: '0 0 4px', color: 'var(--text-primary)' }}>
-          លុបទិន្នន័យ / Confirm Delete
+          {t({ en: 'Confirm Delete', km: 'បញ្ជាក់ការលុប' })}
         </h3>
 
         <p style={{ fontSize: '14px', color: 'var(--ink-muted)', margin: '12px 0 24px', lineHeight: 1.5 }}>
-          Are you sure you want to delete <strong style={{ color: 'var(--text-primary)' }}>&quot;{title}&quot;</strong> from the archive? This action cannot be undone.
+          {t({ en: 'Are you sure you want to delete', km: 'តើអ្នកប្រាកដថាចង់លុប' })}{' '}
+          <strong style={{ color: 'var(--text-primary)' }}>&quot;{title}&quot;</strong>{' '}
+          {t({ en: 'from the archive? This action cannot be undone.', km: 'ចេញពីបណ្ណសារមែនទេ? សកម្មភាពនេះមិនអាចត្រឡប់វិញបានទេ។' })}
         </p>
 
         <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
           <button
             type="button"
-            className="auth-submit"
+            className="btn btn-secondary"
             onClick={onCancel}
             disabled={loading}
-            style={{
-              flex: 1,
-              background: 'transparent',
-              border: '1px solid var(--border-subtle)',
-              color: 'var(--ink-muted)',
-              padding: '12px 18px',
-              fontSize: '13px'
-            }}
+            style={{ flex: 1 }}
           >
-            Cancel / បោះបង់
+            {t({ en: 'Cancel', km: 'បោះបង់' })}
           </button>
           <button
             type="button"
-            className="auth-submit"
+            className="btn btn-danger-solid"
             onClick={onConfirm}
             disabled={loading}
-            style={{
-              flex: 1,
-              background: 'var(--krama-red, #a44a38)',
-              borderColor: 'var(--krama-red, #a44a38)',
-              color: '#fff',
-              padding: '12px 18px',
-              fontSize: '13px'
-            }}
+            style={{ flex: 1 }}
           >
-            {loading ? 'Deleting...' : 'Delete / លុបទិន្នន័យ'}
+            {loading ? t({ en: 'Deleting…', km: 'កំពុងលុប…' }) : t({ en: 'Delete', km: 'លុប' })}
           </button>
         </div>
       </div>
