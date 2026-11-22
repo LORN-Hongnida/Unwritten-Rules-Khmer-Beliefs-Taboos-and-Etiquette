@@ -252,10 +252,27 @@ CREATE POLICY "anyone can read display names"
   FOR SELECT
   USING (true);
 
--- Runs inside Supabase's own sign-up, as the table owner, so it works even when
--- email confirmation means the new user has no session yet. The name is
--- trimmed and cut to 50 characters here: if it broke the CHECK instead, the
--- whole sign-up would fail.
+-- The account's name, wherever it was stored: 'display_name' is what this
+-- site's signup form sends; 'full_name' and 'name' are what the Supabase
+-- dashboard and social logins use. Trimmed and cut to 50 characters here: if
+-- it broke the CHECK instead, the sign-up itself would fail.
+CREATE OR REPLACE FUNCTION public.account_display_name(meta JSONB)
+RETURNS TEXT
+LANGUAGE sql
+IMMUTABLE
+SET search_path = ''
+AS $$
+  SELECT left(coalesce(
+    nullif(trim(meta ->> 'display_name'), ''),
+    nullif(trim(meta ->> 'full_name'), ''),
+    nullif(trim(meta ->> 'name'), '')
+  ), 50);
+$$;
+
+-- Keeps the profile in step with the account: on sign-up, and whenever the
+-- account's details change later (a name set in the dashboard after the fact
+-- reaches the cards too). Runs as the table owner, so it works even when
+-- email confirmation means the new user has no session yet.
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS trigger
 LANGUAGE plpgsql
@@ -264,8 +281,8 @@ SET search_path = ''
 AS $$
 BEGIN
   INSERT INTO public.profiles (id, display_name)
-  VALUES (NEW.id, left(nullif(trim(NEW.raw_user_meta_data ->> 'display_name'), ''), 50))
-  ON CONFLICT (id) DO NOTHING;
+  VALUES (NEW.id, public.account_display_name(NEW.raw_user_meta_data))
+  ON CONFLICT (id) DO UPDATE SET display_name = EXCLUDED.display_name;
   RETURN NEW;
 END;
 $$;
@@ -275,12 +292,20 @@ CREATE TRIGGER on_auth_user_created
   AFTER INSERT ON auth.users
   FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
 
--- Accounts made before this existed get a profile with no name. Safe to run
--- twice: existing profiles are left alone.
+DROP TRIGGER IF EXISTS on_auth_user_updated ON auth.users;
+CREATE TRIGGER on_auth_user_updated
+  AFTER UPDATE OF raw_user_meta_data ON auth.users
+  FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
+
+-- Every existing account gets a profile, and any account whose name is known
+-- fills it in. Safe to run twice; a profile is only changed where the account
+-- actually has a name to give it.
 INSERT INTO public.profiles (id, display_name)
-SELECT id, left(nullif(trim(raw_user_meta_data ->> 'display_name'), ''), 50)
+SELECT id, public.account_display_name(raw_user_meta_data)
 FROM auth.users
-ON CONFLICT (id) DO NOTHING;
+ON CONFLICT (id) DO UPDATE
+  SET display_name = EXCLUDED.display_name
+  WHERE EXCLUDED.display_name IS NOT NULL;
 
 -- ============================================================
 -- 2.4 Re-review: what an edit to a published entry changed
