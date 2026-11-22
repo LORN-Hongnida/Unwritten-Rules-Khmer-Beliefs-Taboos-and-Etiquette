@@ -1,6 +1,8 @@
 'use client';
 
 import { KbachCorner, KhmerFriezeBorder, ThemeVibeIcon } from "./KbachMotifs";
+import SubmittedBy from "./SubmittedBy";
+import { useLanguage } from "./LanguageProvider";
 
 // Each category carries its own motif and badge wording, so a card reads as
 // belonging to its realm even when the archive is unfiltered.
@@ -27,7 +29,9 @@ function ContributorIcon() {
 }
 
 export default function EntryCard({ entry, onSelect, actions = null }) {
+  const { t } = useLanguage();
   const badge = CATEGORY_BADGES[entry.category];
+  const categoryLabel = t({ en: badge.labelEn, km: badge.labelKm });
   const motif = badge.motif;
 
   const renderBanner = () => (
@@ -64,7 +68,7 @@ export default function EntryCard({ entry, onSelect, actions = null }) {
       }}
       tabIndex={0}
       role="button"
-      aria-label={`${entry.title} — open details`}
+      aria-label={`${entry.title} — ${t({ en: 'open details', km: 'មើលលម្អិត' })}`}
     >
       <div className="entry-card-frieze entry-card-frieze-top" aria-hidden="true">
         <KhmerFriezeBorder motif={motif} height={8} />
@@ -90,11 +94,8 @@ export default function EntryCard({ entry, onSelect, actions = null }) {
         <div className="entry-card-header">
           <span className="entry-card-badge">
             <ThemeVibeIcon motif={motif} size={11} />
-            <span className="entry-card-badge-km" lang="km">
-              {badge.labelKm}
-            </span>
+            <span className="entry-card-badge-km">{categoryLabel}</span>
           </span>
-          <span className="entry-card-badge-en">{badge.labelEn}</span>
 
           <span className="entry-card-actions">{actions}</span>
         </div>
@@ -112,7 +113,7 @@ export default function EntryCard({ entry, onSelect, actions = null }) {
             <div className="photo-placeholder-inner">
               <ThemeVibeIcon motif={motif} size={32} />
               <span className="photo-placeholder-text">
-                {badge.labelKm} • {badge.labelEn}
+                {categoryLabel}
               </span>
             </div>
           </div>
@@ -125,9 +126,11 @@ export default function EntryCard({ entry, onSelect, actions = null }) {
         <h4 className="entry-card-title">{entry.title}</h4>
 
         <p className="entry-card-text">
-          <strong>Traditional belief: </strong>
+          <strong>{t({ en: 'Traditional belief', km: 'ជំនឿប្រពៃណី' })}: </strong>
           {entry.description}
         </p>
+
+        <SubmittedBy name={entry.submittedBy} />
 
         <div className="entry-card-footer">
           <span className="entry-card-place">
@@ -138,7 +141,7 @@ export default function EntryCard({ entry, onSelect, actions = null }) {
           </span>
 
           <span className="entry-card-explore">
-            <span>Explore</span>
+            <span>{t({ en: 'Explore', km: 'មើលបន្ថែម' })}</span>
             <span className="entry-card-explore-arrow" aria-hidden="true">
               →
             </span>

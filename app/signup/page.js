@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import SiteNav from '../../components/SiteNav';
 import ThemeAtmosphereBackdrop from '../../components/ThemeAtmosphereBackdrop';
 import { useTheme } from '../../components/ThemeProvider';
+import { useLanguage } from '../../components/LanguageProvider';
 import { ThemeVibeIcon } from '../../components/KbachMotifs';
 import { createClient } from '../../lib/supabase/client';
 import BilingualMessage from '../../components/BilingualMessage';
@@ -14,6 +15,8 @@ import BilingualMessage from '../../components/BilingualMessage';
 // English, so the first screen a Khmer reader met was the one screen that
 // couldn't speak to them.
 const MESSAGES = {
+  displayNameRequired: { en: 'Display name is required.', km: 'ត្រូវការឈ្មោះបង្ហាញ។' },
+  displayNameLength: { en: 'Display name must be 2 to 50 characters.', km: 'ឈ្មោះបង្ហាញត្រូវមានពី ២ ដល់ ៥០ តួអក្សរ។' },
   emailRequired: { en: 'Email address is required.', km: 'ត្រូវការអាសយដ្ឋានអ៊ីមែល។' },
   emailInvalid: { en: 'Email address is invalid.', km: 'អាសយដ្ឋានអ៊ីមែលមិនត្រឹមត្រូវទេ។' },
   passwordRequired: { en: 'Password is required.', km: 'ត្រូវការពាក្យសម្ងាត់។' },
@@ -64,6 +67,16 @@ function EyeOffIcon() {
   );
 }
 
+// Counted in code points for the same reason as the password: a Khmer name
+// must not be refused for being "too long" when it is not.
+function getDisplayNameError(val) {
+  const trimmed = val.trim();
+  if (!trimmed) return MESSAGES.displayNameRequired;
+  const length = [...trimmed].length;
+  if (length < 2 || length > 50) return MESSAGES.displayNameLength;
+  return '';
+}
+
 function getEmailError(val) {
   const trimmed = val.trim();
   if (!trimmed) return MESSAGES.emailRequired;
@@ -85,8 +98,11 @@ function getConfirmPasswordError(confirmVal, passVal) {
   return '';
 }
 
-function validateSignup(emailVal, passVal, confirmPassVal) {
+function validateSignup(displayNameVal, emailVal, passVal, confirmPassVal) {
   const errors = {};
+  const displayNameErr = getDisplayNameError(displayNameVal);
+  if (displayNameErr) errors.displayName = displayNameErr;
+
   const emailErr = getEmailError(emailVal);
   if (emailErr) errors.email = emailErr;
 
@@ -101,8 +117,10 @@ function validateSignup(emailVal, passVal, confirmPassVal) {
 
 export default function SignupPage() {
   const { selectedTheme, setSelectedTheme, isDark, toggleMode } = useTheme();
+  const { t } = useLanguage();
   const router = useRouter();
 
+  const [displayName, setDisplayName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -158,7 +176,10 @@ export default function SignupPage() {
   const handleBlur = (field) => {
     if (!hasSubmitted) return;
 
-    if (field === 'email') {
+    if (field === 'displayName') {
+      const err = displayName.trim() ? getDisplayNameError(displayName) : '';
+      setFieldErrors((prev) => ({ ...prev, displayName: err }));
+    } else if (field === 'email') {
       const trimmed = email.trim();
       if (!trimmed) {
         setFieldErrors((prev) => ({ ...prev, email: '' }));
@@ -189,7 +210,7 @@ export default function SignupPage() {
     setSuccessMessage(null);
     setHasSubmitted(true);
 
-    const errors = validateSignup(email, password, confirmPassword);
+    const errors = validateSignup(displayName, email, password, confirmPassword);
     setFieldErrors(errors);
 
     if (Object.keys(errors).length > 0) {
@@ -203,6 +224,9 @@ export default function SignupPage() {
       const { data, error: authError } = await supabase.auth.signUp({
         email: email.trim(),
         password,
+        // Stored on the account, then copied into public.profiles by the
+        // on_auth_user_created trigger in schema.sql.
+        options: { data: { display_name: displayName.trim() } },
       });
 
       if (authError) {
@@ -245,8 +269,7 @@ export default function SignupPage() {
               <div className="auth-motif" aria-hidden="true">
                 <ThemeVibeIcon motif="beliefs" size={22} />
               </div>
-              <h1 className="auth-title">បង្កើតគណនី</h1>
-              <div className="auth-title-sub">Contributor Registration</div>
+              <h1 className="auth-title">{t({ en: 'Contributor Registration', km: 'បង្កើតគណនី' })}</h1>
               <p className="auth-description">
                 <BilingualMessage
                   en="Create an account to contribute and preserve Khmer cultural knowledge."
@@ -268,11 +291,33 @@ export default function SignupPage() {
 
             <form className="auth-form" onSubmit={handleSignup} noValidate>
               <div className="auth-field">
+                <label className="auth-label" htmlFor="signup-display-name">
+                  <span>
+                    {t({ en: 'Display name', km: 'ឈ្មោះបង្ហាញ' })} <span className="auth-required">*</span>
+                  </span>
+                </label>
+                <input
+                  id="signup-display-name"
+                  type="text"
+                  className={`auth-input ${fieldErrors.displayName ? 'has-error' : ''}`}
+                  placeholder={t({ en: 'Shown publicly on entries you submit', km: 'បង្ហាញជាសាធារណៈលើធាតុដែលអ្នកដាក់ស្នើ' })}
+                  value={displayName}
+                  onChange={(e) => setDisplayName(e.target.value)}
+                  onBlur={() => handleBlur('displayName')}
+                  autoComplete="nickname"
+                />
+                {fieldErrors.displayName && (
+                  <p className="auth-field-error">
+                    <BilingualMessage en={fieldErrors.displayName.en} km={fieldErrors.displayName.km} />
+                  </p>
+                )}
+              </div>
+
+              <div className="auth-field">
                 <label className="auth-label" htmlFor="signup-email">
                   <span>
-                    Email <span className="auth-required">*</span>
+                    {t({ en: 'Email', km: 'អ៊ីមែល' })} <span className="auth-required">*</span>
                   </span>
-                  <span className="auth-label-km">អ៊ីមែល</span>
                 </label>
                 <input
                   id="signup-email"
@@ -294,9 +339,8 @@ export default function SignupPage() {
               <div className="auth-field">
                 <label className="auth-label" htmlFor="signup-password">
                   <span>
-                    Password <span className="auth-required">*</span>
+                    {t({ en: 'Password', km: 'ពាក្យសម្ងាត់' })} <span className="auth-required">*</span>
                   </span>
-                  <span className="auth-label-km">ពាក្យសម្ងាត់</span>
                 </label>
                 <div className="auth-input-wrapper">
                   <input
@@ -313,8 +357,8 @@ export default function SignupPage() {
                     type="button"
                     className="auth-password-toggle"
                     onClick={() => setShowPassword((show) => !show)}
-                    title={showPassword ? 'Hide password' : 'Show password'}
-                    aria-label={showPassword ? 'Hide password' : 'Show password'}
+                    title={t(showPassword ? { en: 'Hide password', km: 'លាក់ពាក្យសម្ងាត់' } : { en: 'Show password', km: 'បង្ហាញពាក្យសម្ងាត់' })}
+                    aria-label={t(showPassword ? { en: 'Hide password', km: 'លាក់ពាក្យសម្ងាត់' } : { en: 'Show password', km: 'បង្ហាញពាក្យសម្ងាត់' })}
                   >
                     {showPassword ? <EyeOffIcon /> : <EyeIcon />}
                   </button>
@@ -329,9 +373,8 @@ export default function SignupPage() {
               <div className="auth-field">
                 <label className="auth-label" htmlFor="signup-confirm-password">
                   <span>
-                    Confirm Password <span className="auth-required">*</span>
+                    {t({ en: 'Confirm Password', km: 'ផ្ទៀងផ្ទាត់ពាក្យសម្ងាត់' })} <span className="auth-required">*</span>
                   </span>
-                  <span className="auth-label-km">ផ្ទៀងផ្ទាត់ពាក្យសម្ងាត់</span>
                 </label>
                 <div className="auth-input-wrapper">
                   <input
@@ -348,8 +391,8 @@ export default function SignupPage() {
                     type="button"
                     className="auth-password-toggle"
                     onClick={() => setShowConfirmPassword((show) => !show)}
-                    title={showConfirmPassword ? 'Hide password' : 'Show password'}
-                    aria-label={showConfirmPassword ? 'Hide password' : 'Show password'}
+                    title={t(showConfirmPassword ? { en: 'Hide password', km: 'លាក់ពាក្យសម្ងាត់' } : { en: 'Show password', km: 'បង្ហាញពាក្យសម្ងាត់' })}
+                    aria-label={t(showConfirmPassword ? { en: 'Hide password', km: 'លាក់ពាក្យសម្ងាត់' } : { en: 'Show password', km: 'បង្ហាញពាក្យសម្ងាត់' })}
                   >
                     {showConfirmPassword ? <EyeOffIcon /> : <EyeIcon />}
                   </button>
@@ -369,14 +412,14 @@ export default function SignupPage() {
                 className="auth-submit"
                 disabled={loading}
               >
-                {loading ? 'Creating account... / កំពុងបង្កើតគណនី...' : 'Sign Up / បង្កើតគណនី'}
+                {loading ? t({ en: 'Creating account…', km: 'កំពុងបង្កើតគណនី…' }) : t({ en: 'Sign Up', km: 'បង្កើតគណនី' })}
               </button>
             </form>
 
             <div className="auth-footer">
-              Already have a contributor account?
+              {t({ en: 'Already have a contributor account?', km: 'មានគណនីអ្នករួមចំណែករួចហើយ?' })}
               <Link href="/login" className="auth-link">
-                Sign in
+                {t({ en: 'Sign in', km: 'ចូលគណនី' })}
               </Link>
             </div>
           </div>

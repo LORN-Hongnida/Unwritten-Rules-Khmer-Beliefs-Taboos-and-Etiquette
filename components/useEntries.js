@@ -2,6 +2,26 @@
 
 import { useEffect, useState } from 'react';
 import { createClient } from '../lib/supabase/client';
+import collection from '../collection.config.js';
+
+// One query for every submitter on the page, not one per card. If the lookup
+// fails (or the profiles table is not there yet) the archive still loads; the
+// cards just go without a "Submitted by" line.
+export async function fetchDisplayNames(supabase, entries) {
+  const ids = [...new Set(entries.map((e) => e.owner).filter(Boolean))];
+  if (ids.length === 0) return {};
+
+  const { data, error } = await supabase
+    .from('profiles')
+    .select('id, display_name')
+    .in('id', ids);
+
+  if (error) {
+    console.error('Failed to fetch submitter names:', error);
+    return {};
+  }
+  return Object.fromEntries(data.map((p) => [p.id, p.display_name]));
+}
 
 export function normalizeEntry(item) {
   return {
@@ -51,7 +71,14 @@ export default function useEntries() {
           // The Supabase query already filters by status = 'published', but with
           // RLS a reviewer's session can return every status. The client-side
           // filter is defense-in-depth: only published entries reach the public.
-          setEntries(data.map(normalizeEntry).filter((e) => e.status === 'published'));
+          const published = data.map(normalizeEntry).filter((e) => e.status === 'published');
+          const names = await fetchDisplayNames(supabase, published);
+          // No owner means a seed entry the curator added straight to the
+          // database, so the curator is its submitter.
+          setEntries(published.map((e) => ({
+            ...e,
+            submittedBy: e.owner ? names[e.owner] || null : collection.curator,
+          })));
         } else if (error) {
           console.error('Failed to fetch entries from Supabase:', error);
         }
