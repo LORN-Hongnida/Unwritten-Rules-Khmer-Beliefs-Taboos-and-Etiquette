@@ -4,22 +4,54 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import EntryCard from '../../components/EntryCard';
 import EntryDetailModal from '../../components/EntryDetailModal';
-import EntryStatusBadge from '../../components/EntryStatusBadge';
+import EntryListRow from '../../components/EntryListRow';
+import EntryOwnerActions from '../../components/EntryOwnerActions';
+import EditedTag from '../../components/EditedTag';
+import EntryChanges from '../../components/EntryChanges';
+import ReviewerNote from '../../components/ReviewerNote';
+import ViewModeToggle from '../../components/ViewModeToggle';
+import useViewMode from '../../components/useViewMode';
+import ReviewStatusTabs from '../../components/ReviewStatusTabs';
+import SearchBox, { matchesSearch } from '../../components/SearchBox';
 import SiteNav from '../../components/SiteNav';
 import ThemeAtmosphereBackdrop from '../../components/ThemeAtmosphereBackdrop';
 import { ThemeVibeIcon } from '../../components/KbachMotifs';
 import { useTheme } from '../../components/ThemeProvider';
+import { useLanguage } from '../../components/LanguageProvider';
 import { normalizeEntry } from '../../components/useEntries';
 import { createClient } from '../../lib/supabase/client';
 
+// One list per state rather than a badge on every card. Returned entries get
+// their own tab: they are waiting on the author, not on the reviewer, and
+// mixing them in with Pending hid the ones that need something done.
+const AUTHOR_TABS = [
+  { value: 'pending', en: 'Waiting for review', km: 'កំពុងរង់ចាំការពិនិត្យ' },
+  { value: 'returned', en: 'Needs changes', km: 'ត្រូវកែប្រែ' },
+  { value: 'published', en: 'Public', km: 'សាធារណៈ' },
+];
+const EMPTY = {
+  pending: { en: 'Nothing waiting for review', km: 'គ្មានធាតុកំពុងរង់ចាំការពិនិត្យទេ' },
+  returned: { en: 'Nothing needs changes', km: 'គ្មានធាតុត្រូវកែប្រែទេ' },
+  published: { en: 'None of your entries are public yet', km: 'មិនទាន់មានធាតុរបស់អ្នកជាសាធារណៈនៅឡើយទេ' },
+};
+
 export default function MyEntriesPage() {
   const { selectedTheme, setSelectedTheme, isDark, toggleMode } = useTheme();
+  const { t } = useLanguage();
 
   const [user, setUser] = useState(null);
   const [userLoading, setUserLoading] = useState(true);
   const [entries, setEntries] = useState([]);
   const [loading, setLoading] = useState(true);
   const [openEntry, setOpenEntry] = useState(null);
+  const [tab, setTab] = useState('pending');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [viewMode, setViewMode] = useViewMode('archive_view_my_entries');
+
+  const counts = Object.fromEntries(
+    AUTHOR_TABS.map((t) => [t.value, entries.filter((e) => e.status === t.value).length])
+  );
+  const visibleEntries = entries.filter((e) => e.status === tab && matchesSearch(e, searchTerm));
 
   useEffect(() => {
     let isMounted = true;
@@ -51,7 +83,11 @@ export default function MyEntriesPage() {
         if (error) {
           console.error('Failed to load your entries:', error);
         } else if (data) {
-          setEntries(data.map((item) => ({ ...normalizeEntry(item), review_note: item.review_note })));
+          setEntries(data.map((item) => ({
+            ...normalizeEntry(item),
+            review_note: item.review_note,
+            previous_version: item.previous_version,
+          })));
         }
       } catch (err) {
         console.error('Failed to load your entries:', err);
@@ -84,7 +120,7 @@ export default function MyEntriesPage() {
         <div className="page-content">
           {chrome}
           <main className="browse-page" style={{ textAlign: 'center', padding: '60px 20px' }}>
-            <p>Loading session… / កំពុងផ្ទុក…</p>
+            <p>{t({ en: 'Loading…', km: 'កំពុងផ្ទុក…' })}</p>
           </main>
         </div>
       </div>
@@ -103,16 +139,15 @@ export default function MyEntriesPage() {
               <div className="auth-motif" aria-hidden="true" style={{ marginBottom: '12px' }}>
                 <ThemeVibeIcon motif="etiquette" size={28} />
               </div>
-              <h1 className="auth-title">ចូលប្រើប្រាស់គណនី</h1>
-              <div className="auth-title-sub">Contributor Authentication Required</div>
+              <h1 className="auth-title">{t({ en: 'Sign in required', km: 'ត្រូវចូលគណនី' })}</h1>
               <p className="auth-description" style={{ margin: '16px 0 24px' }}>
-                Sign in to see the entries you have shared and where each one stands.
-                <span className="msg-km" lang="km">
-                  ចូលគណនីដើម្បីមើលធាតុដែលអ្នកបានចែករំលែក និងស្ថានភាពរបស់វា។
-                </span>
+                {t({
+                  en: 'Sign in to see the entries you have shared and where each one stands.',
+                  km: 'ចូលគណនីដើម្បីមើលធាតុដែលអ្នកបានចែករំលែក និងស្ថានភាពរបស់វា។',
+                })}
               </p>
               <Link href="/login" className="auth-submit" style={{ display: 'inline-block', textDecoration: 'none' }}>
-                Sign In / ចូលគណនី
+                {t({ en: 'Sign In', km: 'ចូលគណនី' })}
               </Link>
             </div>
           </main>
@@ -131,56 +166,72 @@ export default function MyEntriesPage() {
             <div>
               <Link href="/browse" className="browse-back">
                 <span aria-hidden="true">←</span>
-                <span lang="km">ត្រឡប់ទៅប័ណ្ណសារ</span>
-                <span>(Back to Browse Archive)</span>
+                <span>{t({ en: 'Back to Browse Archive', km: 'ត្រឡប់ទៅបណ្ណសារ' })}</span>
               </Link>
 
               <div className="browse-heading">
                 <span className="browse-motif" aria-hidden="true">
                   <ThemeVibeIcon motif="lantern" size={20} />
                 </span>
-                <h1 className="browse-title" lang="km">ធាតុរបស់ខ្ញុំ</h1>
+                <h1 className="browse-title">{t({ en: 'My Entries', km: 'ធាតុរបស់ខ្ញុំ' })}</h1>
               </div>
               <p className="browse-subtitle">
-                My entries — everything you have shared, and where each one stands.
+                {t({
+                  en: 'Everything you have shared, and where each one stands.',
+                  km: 'អ្វីៗទាំងអស់ដែលអ្នកបានចែករំលែក និងស្ថានភាពរបស់ធាតុនីមួយៗ។',
+                })}
               </p>
             </div>
           </div>
 
-          <div className="entries-grid">
+          <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'flex-start', gap: '0 12px' }}>
+            <ReviewStatusTabs value={tab} onChange={setTab} tabs={AUTHOR_TABS} counts={counts} />
+            <ViewModeToggle value={viewMode} onChange={setViewMode} />
+          </div>
+          <SearchBox value={searchTerm} onChange={setSearchTerm}
+            placeholder={t({
+              en: 'Search your entries by English, Khmer, place or source...',
+              km: 'ស្វែងរកធាតុរបស់អ្នកជាភាសាខ្មែរ អង់គ្លេស តាមទីកន្លែង ឬប្រភព...',
+            })} />
+
+          <div className={viewMode === 'list' ? 'entry-list' : 'entries-grid'}>
             {loading ? (
               <div className="empty-state">
-                <p className="empty-state-title">Loading your entries…</p>
-                <p className="empty-state-title-km" lang="km">កំពុងផ្ទុកធាតុរបស់អ្នក…</p>
+                <p className="empty-state-title">{t({ en: 'Loading your entries…', km: 'កំពុងផ្ទុកធាតុរបស់អ្នក…' })}</p>
               </div>
-            ) : entries.length > 0 ? (
-              entries.map((entry) => (
-                <div key={entry.id} className="my-entry-row">
-                  <div style={{ marginBottom: '8px' }}>
-                    <EntryStatusBadge status={entry.status} />
+            ) : visibleEntries.length > 0 ? (
+              // Only a returned entry carries a note; an edited published entry
+              // carries the tag that explains why it left the archive.
+              visibleEntries.map((entry) => {
+                const extras = (<>
+                  <EditedTag entry={entry} />
+                  <ReviewerNote note={entry.status === 'returned' ? entry.review_note : null} />
+                </>);
+                return viewMode === 'list' ? (
+                  <EntryListRow key={entry.id} entry={entry} onSelect={setOpenEntry}
+                    actions={<EntryOwnerActions entryId={entry.id} ownerId={entry.owner} entryTitle={entry.title} knownOwner />}>
+                    {extras}
+                  </EntryListRow>
+                ) : (
+                  <div key={entry.id} className="my-entry-row">
+                    {extras}
+                    <EntryCard entry={entry} onSelect={setOpenEntry} />
                   </div>
-                  {/* Only a returned entry carries a note, and a return without
-                      a reason is just a door closing. Plain text in a <p>: a
-                      reviewer's words are words, not markup. */}
-                  {entry.status === 'returned' && entry.review_note && (
-                    <p className="my-entry-note">
-                      <span className="my-entry-note-label" lang="km">
-                        សំណើពីអ្នកពិនិត្យ
-                      </span>
-                      <span className="my-entry-note-label">A note from the reviewer</span>
-                      {entry.review_note}
-                    </p>
-                  )}
-                  <EntryCard entry={entry} onSelect={setOpenEntry} />
-                </div>
-              ))
+                );
+              })
+            ) : entries.length > 0 ? (
+              // They have entries, just none in this tab or matching the search.
+              <div className="empty-state">
+                <p className="empty-state-title">
+                  {t(searchTerm ? { en: 'No entries match your search', km: 'គ្មានធាតុត្រូវនឹងការស្វែងរករបស់អ្នកទេ' } : EMPTY[tab])}
+                </p>
+              </div>
             ) : (
               <div className="empty-state">
-                <p className="empty-state-title">You have not shared an entry yet</p>
-                <p className="empty-state-title-km" lang="km">អ្នកមិនទាន់បានចែករំលែកធាតុណាមួយទេ</p>
+                <p className="empty-state-title">{t({ en: 'You have not shared an entry yet', km: 'អ្នកមិនទាន់បានចែករំលែកធាតុណាមួយទេ' })}</p>
                 <p className="empty-state-hint">
                   <Link href="/contribute" className="auth-link">
-                    Contribute one / រួមចំណែកមួយ
+                    {t({ en: 'Contribute one', km: 'រួមចំណែកមួយ' })}
                   </Link>
                 </p>
               </div>
@@ -189,7 +240,10 @@ export default function MyEntriesPage() {
         </main>
       </div>
 
-      <EntryDetailModal entry={openEntry} onClose={() => setOpenEntry(null)} shareHref={null} />
+      {/* The author sees the same "what changed" as the reviewer, so they can
+          check their edit is what they meant before it is reviewed. */}
+      <EntryDetailModal entry={openEntry} onClose={() => setOpenEntry(null)} shareHref={null}
+        notice={<EntryChanges entry={openEntry} />} />
     </div>
   );
 }
