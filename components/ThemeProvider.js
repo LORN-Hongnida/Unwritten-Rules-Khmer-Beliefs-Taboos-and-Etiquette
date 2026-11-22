@@ -21,25 +21,52 @@ export default function ThemeProvider({ children }) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
-  // The theme is part of what the reader is looking at, so the URL owns it:
-  // it survives a reload, a shared link, and the browser's back button.
+  // A theme named in the address (a shared link) always wins. Without one,
+  // the reader's saved theme applies.
   const themeParam = searchParams.get("theme");
-  const selectedTheme = THEME_ORDER.includes(themeParam) ? themeParam : "all";
+  const urlTheme = THEME_ORDER.includes(themeParam) ? themeParam : null;
+  const [savedTheme, setSavedTheme] = useState(null);
+  const selectedTheme = urlTheme ?? savedTheme ?? "all";
 
   // Mode is a display preference rather than a view of the archive, so it
-  // stays in state and out of the address bar.
+  // stays out of the address bar and is remembered in localStorage instead.
   const [isDark, setIsDark] = useState(true);
+
+  // The server cannot see localStorage, so it renders the defaults. The inline
+  // script in app/layout.js has already painted the saved theme and mode on
+  // <html> before the page appeared; this catches React's state up to it.
+  // Until it has, the effect below must not write the defaults back, or the
+  // page would flash dark and fade into light on every load.
+  const [restored, setRestored] = useState(false);
+  useEffect(() => {
+    try {
+      if (localStorage.getItem("archive_mode") === "light") setIsDark(false);
+      const stored = localStorage.getItem("archive_theme");
+      if (THEME_ORDER.includes(stored)) setSavedTheme(stored);
+    } catch {}
+    setRestored(true);
+  }, []);
 
   // The theme tables in globals.css key off these two attributes, so setting
   // them here retints every surface at once.
   useEffect(() => {
+    if (!restored) return;
     const root = document.documentElement;
     root.setAttribute("data-theme", selectedTheme);
     root.setAttribute("data-mode", isDark ? "dark" : "light");
-  }, [selectedTheme, isDark]);
+  }, [restored, selectedTheme, isDark]);
+
+  // Arriving through a themed link counts as choosing that theme.
+  useEffect(() => {
+    if (!urlTheme) return;
+    try { localStorage.setItem("archive_theme", urlTheme); } catch {}
+  }, [urlTheme]);
 
   const setSelectedTheme = useCallback(
     (theme) => {
+      setSavedTheme(theme);
+      try { localStorage.setItem("archive_theme", theme); } catch {}
+
       const params = new URLSearchParams(searchParams);
       // "all" is the default, so it is left out to keep clean URLs shareable.
       if (theme === "all") params.delete("theme");
@@ -54,11 +81,18 @@ export default function ThemeProvider({ children }) {
     [pathname, router, searchParams]
   );
 
+  const toggleMode = () => {
+    setIsDark((dark) => {
+      try { localStorage.setItem("archive_mode", dark ? "light" : "dark"); } catch {}
+      return !dark;
+    });
+  };
+
   const value = {
     selectedTheme,
     setSelectedTheme,
     isDark,
-    toggleMode: () => setIsDark((dark) => !dark),
+    toggleMode,
   };
 
   return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;
