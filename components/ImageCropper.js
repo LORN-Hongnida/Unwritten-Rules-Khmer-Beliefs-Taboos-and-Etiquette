@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { useLanguage } from './LanguageProvider';
 
 // Entry photos are displayed in a fixed 16:9 frame on cards and in the detail
 // modal, so the crop is baked in at that ratio: what the contributor frames
@@ -85,7 +86,15 @@ function ResetIcon() {
   );
 }
 
+// Kept as pairs so the error shows in whichever language the reader chose.
+const CROP_ERRORS = {
+  unreadable: { en: 'That image could not be read. Try a different file.', km: 'មិនអាចអានរូបភាពនោះបានទេ។ សូមសាកល្បងឯកសារផ្សេង។' },
+  tooBig: { en: 'Could not process the crop. Try a smaller image.', km: 'មិនអាចកាត់រូបបានទេ។ សូមសាកល្បងរូបភាពតូចជាងនេះ។' },
+  failed: { en: 'Could not process the crop. Try a different image.', km: 'មិនអាចកាត់រូបបានទេ។ សូមសាកល្បងរូបភាពផ្សេង។' },
+};
+
 export default function ImageCropper({ file, initialAdjustment = null, onCancel, onApply }) {
+  const { t } = useLanguage();
   const imageRef = useRef(null);
   const stageRef = useRef(null);
   // Holds the image with any rotation already baked in, so cropping never has
@@ -118,7 +127,7 @@ export default function ImageCropper({ file, initialAdjustment = null, onCancel,
     sourceCanvasRef.current = canvas;
     canvas.toBlob((blob) => {
       if (!blob) {
-        setLoadError('That image could not be read. Try a different file.');
+        setLoadError(CROP_ERRORS.unreadable);
         return;
       }
       const url = URL.createObjectURL(blob);
@@ -145,7 +154,7 @@ export default function ImageCropper({ file, initialAdjustment = null, onCancel,
     img.onload = () => {
       if (cancelled) return;
       if (!img.naturalWidth || !img.naturalHeight) {
-        setLoadError('That image could not be read. Try a different file.');
+        setLoadError(CROP_ERRORS.unreadable);
         return;
       }
       const decoded = document.createElement('canvas');
@@ -161,7 +170,7 @@ export default function ImageCropper({ file, initialAdjustment = null, onCancel,
       URL.revokeObjectURL(fileUrl);
     };
     img.onerror = () => {
-      if (!cancelled) setLoadError('That image could not be read. Try a different file.');
+      if (!cancelled) setLoadError(CROP_ERRORS.unreadable);
       URL.revokeObjectURL(fileUrl);
     };
     img.src = fileUrl;
@@ -349,7 +358,7 @@ export default function ImageCropper({ file, initialAdjustment = null, onCancel,
 
       const blob = await new Promise((resolve) => canvas.toBlob(resolve, mime, 0.9));
       if (!blob) {
-        setLoadError('Could not process the crop. Try a smaller image.');
+        setLoadError(CROP_ERRORS.tooBig);
         return;
       }
 
@@ -362,7 +371,7 @@ export default function ImageCropper({ file, initialAdjustment = null, onCancel,
       );
     } catch (err) {
       console.error('Crop failed:', err);
-      setLoadError('Could not process the crop. Try a different image.');
+      setLoadError(CROP_ERRORS.failed);
     } finally {
       setWorking(false);
     }
@@ -384,7 +393,7 @@ export default function ImageCropper({ file, initialAdjustment = null, onCancel,
       className="modal-overlay"
       role="dialog"
       aria-modal="true"
-      aria-label="Crop and adjust photo"
+      aria-label={t({ en: 'Crop and adjust photo', km: 'កាត់ និងកែតម្រូវរូបថត' })}
       onMouseDown={(e) => {
         if (e.target === e.currentTarget) onCancel();
       }}
@@ -392,20 +401,20 @@ export default function ImageCropper({ file, initialAdjustment = null, onCancel,
       <div className="cropper-panel">
         <div className="cropper-header">
           <div>
-            <h3 className="cropper-title">Crop &amp; Adjust</h3>
-            <p className="cropper-subtitle">កែតម្រូវរូបថត • Framed at 16:9 for the archive</p>
+            <h3 className="cropper-title">{t({ en: 'Crop & Adjust', km: 'កាត់ និងកែតម្រូវ' })}</h3>
+            <p className="cropper-subtitle">{t({ en: 'Framed at 16:9 for the archive', km: 'កាត់ជាសមាមាត្រ ១៦:៩ សម្រាប់បណ្ណសារ' })}</p>
           </div>
           <div className="cropper-tools">
-            <button type="button" className="cropper-tool" onClick={() => rotate('left')} title="Rotate left" aria-label="Rotate left">
+            <button type="button" className="cropper-tool" onClick={() => rotate('left')} title={t({ en: 'Rotate left', km: 'បង្វិលទៅឆ្វេង' })} aria-label={t({ en: 'Rotate left', km: 'បង្វិលទៅឆ្វេង' })}>
               <RotateLeftIcon />
             </button>
-            <button type="button" className="cropper-tool" onClick={() => rotate('right')} title="Rotate right" aria-label="Rotate right">
+            <button type="button" className="cropper-tool" onClick={() => rotate('right')} title={t({ en: 'Rotate right', km: 'បង្វិលទៅស្តាំ' })} aria-label={t({ en: 'Rotate right', km: 'បង្វិលទៅស្តាំ' })}>
               <RotateRightIcon />
             </button>
-            <button type="button" className="cropper-tool" onClick={reset} title="Reset crop" aria-label="Reset crop">
+            <button type="button" className="cropper-tool" onClick={reset} title={t({ en: 'Reset crop', km: 'កំណត់ការកាត់ឡើងវិញ' })} aria-label={t({ en: 'Reset crop', km: 'កំណត់ការកាត់ឡើងវិញ' })}>
               <ResetIcon />
             </button>
-            <button type="button" className="modal-close" onClick={onCancel} aria-label="Cancel crop">
+            <button type="button" className="modal-close" onClick={onCancel} aria-label={t({ en: 'Cancel crop', km: 'បោះបង់ការកាត់' })}>
               ✕
             </button>
           </div>
@@ -429,7 +438,7 @@ export default function ImageCropper({ file, initialAdjustment = null, onCancel,
               style={boxStyle}
               tabIndex={0}
               role="application"
-              aria-label="Crop selection: drag to move, corner handles to resize, arrow keys to nudge"
+              aria-label={t({ en: 'Crop selection: drag to move, corner handles to resize, arrow keys to nudge', km: 'ផ្ទៃកាត់៖ អូសដើម្បីផ្លាស់ទី អូសជ្រុងដើម្បីប្តូរទំហំ ប្រើគ្រាប់ចុចព្រួញដើម្បីរំកិល' })}
               onPointerDown={beginDrag('move')}
               onPointerMove={onDragMove}
               onPointerUp={endDrag}
@@ -451,15 +460,15 @@ export default function ImageCropper({ file, initialAdjustment = null, onCancel,
           )}
         </div>
 
-        {loadError && <p className="auth-field-error cropper-error">{loadError}</p>}
+        {loadError && <p className="auth-field-error cropper-error">{t(loadError)}</p>}
 
         <p className="cropper-hint">
-          Drag the box to move it • drag a corner to resize • arrow keys nudge
+          {t({ en: 'Drag the box to move it • drag a corner to resize • arrow keys nudge', km: 'អូសប្រអប់ដើម្បីផ្លាស់ទី • អូសជ្រុងដើម្បីប្តូរទំហំ • ប្រើគ្រាប់ចុចព្រួញដើម្បីរំកិល' })}
         </p>
 
         <div className="cropper-actions">
           <button type="button" className="cropper-cancel" onClick={onCancel}>
-            Cancel
+            {t({ en: 'Cancel', km: 'បោះបង់' })}
           </button>
           <button
             type="button"
@@ -467,7 +476,7 @@ export default function ImageCropper({ file, initialAdjustment = null, onCancel,
             onClick={apply}
             disabled={!crop || working}
           >
-            {working ? 'Processing…' : 'Apply Crop / យល់ព្រម'}
+            {working ? t({ en: 'Processing…', km: 'កំពុងដំណើរការ…' }) : t({ en: 'Apply Crop', km: 'យល់ព្រម' })}
           </button>
         </div>
       </div>

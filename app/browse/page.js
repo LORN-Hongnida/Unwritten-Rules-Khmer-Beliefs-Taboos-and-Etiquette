@@ -13,9 +13,11 @@ import { ThemeVibeIcon } from "../../components/KbachMotifs";
 import { useTheme } from "../../components/ThemeProvider";
 import useEntryRoute from "../../components/useEntryRoute";
 import useEntries from "../../components/useEntries";
+import { useLanguage } from "../../components/LanguageProvider";
 
 export default function BrowsePage() {
   const { selectedTheme, setSelectedTheme, isDark, toggleMode } = useTheme();
+  const { t } = useLanguage();
   const { entries, loading } = useEntries();
   const { openEntry, setOpenEntry, buildHref } = useEntryRoute(entries);
 
@@ -84,26 +86,25 @@ export default function BrowsePage() {
                 className="browse-back"
               >
                 <span aria-hidden="true">←</span>
-                <span lang="km">ត្រឡប់ទៅទំព័រដើម</span>
-                <span>(Back to Home)</span>
+                <span>{t({ en: 'Back to Home', km: 'ត្រឡប់ទៅទំព័រដើម' })}</span>
               </Link>
 
               <div className="browse-heading">
                 <span className="browse-motif" aria-hidden="true">
                   <ThemeVibeIcon motif={themes[selectedTheme].motifType} size={20} />
                 </span>
-                <h1 className="browse-title" lang="km">
-                  {themes[selectedTheme].browse.titleKm}
+                <h1 className="browse-title">
+                  {t({ en: themes[selectedTheme].browse.titleEn, km: themes[selectedTheme].browse.titleKm })}
                 </h1>
               </div>
               <p className="browse-subtitle">
-                {themes[selectedTheme].browse.subtitle}
+                {t({ en: themes[selectedTheme].browse.subtitle, km: themes[selectedTheme].browse.subtitleKm })}
               </p>
             </div>
 
             <div className="browse-volume">
               <div>
-                <span className="browse-volume-label">Archive Volume</span>
+                <span className="browse-volume-label">{t({ en: 'Archive Volume', km: 'ចំនួនក្នុងបណ្ណសារ' })}</span>
                 <span className="browse-volume-count">
                   {filteredEntries.length} / {entries.length}
                 </span>
@@ -128,9 +129,8 @@ export default function BrowsePage() {
               /* Until the fetch settles there is nothing to conclude: saying
                  "no entries" would read as an empty archive. */
               <div className="empty-state">
-                <p className="empty-state-title">Loading entries…</p>
-                <p className="empty-state-title-km" lang="km">
-                  កំពុងផ្ទុកកំណត់ត្រា…
+                <p className="empty-state-title">
+                  {t({ en: 'Loading entries…', km: 'កំពុងផ្ទុកកំណត់ត្រា…' })}
                 </p>
               </div>
             ) : filteredEntries.length > 0 ? (
@@ -139,12 +139,11 @@ export default function BrowsePage() {
               ))
             ) : (
               <div className="empty-state">
-                <p className="empty-state-title">No entries found</p>
-                <p className="empty-state-title-km" lang="km">
-                  រកមិនឃើញកំណត់ត្រា
+                <p className="empty-state-title">
+                  {t({ en: 'No entries found', km: 'រកមិនឃើញកំណត់ត្រា' })}
                 </p>
                 <p className="empty-state-hint">
-                  Try a different search term / សូមសាកល្បងពាក្យស្វែងរកផ្សេង
+                  {t({ en: 'Try a different search term', km: 'សូមសាកល្បងពាក្យស្វែងរកផ្សេង' })}
                 </p>
               </div>
             )}

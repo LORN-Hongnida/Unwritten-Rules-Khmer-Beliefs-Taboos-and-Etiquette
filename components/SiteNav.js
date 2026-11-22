@@ -6,6 +6,8 @@ import { usePathname } from "next/navigation";
 import { ThemeVibeIcon } from "./KbachMotifs";
 import ThemeDropdown from "./ThemeDropdown";
 import UserNavAuth from "./UserNavAuth";
+import LanguageToggle from "./LanguageToggle";
+import { useLanguage } from "./LanguageProvider";
 
 
 // Inline icons; the reference uses lucide-react, which is not a dependency here.
@@ -40,9 +42,11 @@ import themes from "../data/themes.js";
 
 // The same on every page: a nav that changes per route is disorienting.
 const NAV_LINKS = [
-  { href: "/", label: "Home" },
-  { href: "/browse", label: "Browse Archive" },
-  { href: "/contribute", label: "Contribute" },
+  // Khmer written as Khmer, not \u escapes, so it can be proofread in review.
+  // Same spellings the rest of the site already uses.
+  { href: "/", labelEn: "Home", labelKm: "\u1791\u17c6\u1796\u17d0\u179a\u178a\u17be\u1798" },
+  { href: "/browse", labelEn: "Browse Archive", labelKm: "\u179a\u17bb\u1780\u179a\u1780\u1794\u178e\u17d2\u178e\u179f\u17b6\u179a" },
+  { href: "/contribute", labelEn: "Contribute", labelKm: "\u179a\u17bd\u1798\u1785\u17c6\u178e\u17c2\u1780" },
 ];
 
 // Moving between pages keeps the chosen theme: picking "Taboos" and then
@@ -65,6 +69,7 @@ export default function SiteNav({
   onToggleMode,
 }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { language, t } = useLanguage();
   const [isThemeOpen, setIsThemeOpen] = useState(false);
   const pathname = usePathname();
 
@@ -109,8 +114,8 @@ export default function SiteNav({
             <ThemeVibeIcon motif={motif} size={20} />
           </span>
           <span className="site-nav-wordmark">
-            <strong>Unwritten Rules</strong>
-            <small>Khmer beliefs, taboos and etiquette</small>
+            <strong>{t({ en: 'Unwritten Rules', km: 'ច្បាប់មិនចែង' })}</strong>
+            <small>{t({ en: 'Khmer beliefs, taboos and etiquette', km: 'ជំនឿ ការហាមប្រាម និងសុជីវធម៌ខ្មែរ' })}</small>
           </span>
         </Link>
 
@@ -122,11 +127,13 @@ export default function SiteNav({
               onClick={() => setIsThemeOpen((open) => !open)}
               aria-expanded={isThemeOpen}
               aria-haspopup="true"
-              title="Change theme and category"
+              title={t({ en: 'Change theme and category', km: 'ប្តូររចនាបថ និងប្រភេទ' })}
             >
               <ThemeVibeIcon motif={motif} size={15} />
               <span className="site-nav-theme-label">
-                {selectedTheme === "all" ? "Theme" : themes[selectedTheme].nameEn.split(" ")[0]}
+                {selectedTheme === "all"
+                  ? t({ en: "Theme", km: "រចនាបថ" })
+                  : t({ en: themes[selectedTheme].nameEn.split(" ")[0], km: themes[selectedTheme].nameKm.split(" ")[0] })}
               </span>
               <span className="site-nav-theme-caret" aria-hidden="true">▾</span>
             </button>
@@ -145,17 +152,18 @@ export default function SiteNav({
             onClick={onToggleMode}
             title={
               isDark
-                ? "Switch to light mode (ប្តូរទៅពន្លឺថ្ងៃ)"
-                : "Switch to dark mode (ប្តូរទៅរាត្រី)"
+                ? t({ en: "Switch to light mode", km: "ប្តូរទៅពន្លឺថ្ងៃ" })
+                : t({ en: "Switch to dark mode", km: "ប្តូរទៅរាត្រី" })
             }
-            aria-label="Toggle light and dark mode"
+            aria-label={t({ en: "Toggle light and dark mode", km: "ប្តូររវាងពន្លឺ និងងងឹត" })}
           >
             {isDark ? <MoonIcon /> : <SunIcon />}
             <span className="site-nav-mode-label">
-              {isDark ? "Dark" : "Light"}
+              {isDark ? t({ en: "Dark", km: "ងងឹត" }) : t({ en: "Light", km: "ភ្លឺ" })}
             </span>
           </button>
 
+          <LanguageToggle />
           <button
           type="button"
           className={`site-nav-burger ${isMenuOpen ? "is-open" : ""}`}
@@ -178,7 +186,7 @@ export default function SiteNav({
                 className="site-nav-link"
                 onClick={handleNavClick}
               >
-                {link.label}
+                {language === "km" ? link.labelKm : link.labelEn}
               </a>
             ) : (
               <Link
@@ -190,7 +198,7 @@ export default function SiteNav({
                 aria-current={pathname === link.href ? "page" : undefined}
                 onClick={() => setIsMenuOpen(false)}
               >
-                {link.label}
+                {language === "km" ? link.labelKm : link.labelEn}
               </Link>
             )
           )}

@@ -2,6 +2,7 @@ import { Suspense } from "react";
 import collection from "../collection.config.js";
 import "./globals.css";
 import ThemeProvider from "../components/ThemeProvider";
+import LanguageProvider from "../components/LanguageProvider";
 
 export const metadata = {
   title: `${collection.name} — Khmer Living Archive`,
@@ -30,7 +31,7 @@ export default function RootLayout({ children }) {
         {/* ThemeProvider reads the query string, which is only known at request
             time; Suspense lets the rest of the shell prerender regardless. */}
         <Suspense>
-          <ThemeProvider>{children}</ThemeProvider>
+          <LanguageProvider><ThemeProvider>{children}</ThemeProvider></LanguageProvider>
         </Suspense>
       </body>
     </html>

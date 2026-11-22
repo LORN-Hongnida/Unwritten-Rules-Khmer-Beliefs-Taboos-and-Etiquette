@@ -3,6 +3,7 @@
 import { useEffect, useRef } from "react";
 import themes, { THEME_ORDER } from "../data/themes.js";
 import { ThemeVibeIcon } from "./KbachMotifs";
+import { useLanguage } from "./LanguageProvider";
 
 // Inline icons: the reference uses lucide-react, which this project does not
 // carry as a dependency.
@@ -24,14 +25,15 @@ function CheckIcon() {
 
 // Short labels for the menu; the full names live in data/themes.js.
 const SHORT_LABELS = {
-  all: { en: "All Traditions", km: "ទាំងអស់" },
-  etiquette: { en: "Khmer Etiquette", km: "សុជីវធម៌" },
-  beliefs: { en: "Khmer Beliefs", km: "ជំនឿ" },
-  taboos: { en: "Khmer Taboos", km: "ការហាមប្រាម" },
+  all: { en: "All Traditions", km: "ទំនៀមទម្លាប់ទាំងអស់" },
+  etiquette: { en: "Khmer Etiquette", km: "សុជីវធម៌ខ្មែរ" },
+  beliefs: { en: "Khmer Beliefs", km: "ជំនឿខ្មែរ" },
+  taboos: { en: "Khmer Taboos", km: "ការហាមប្រាមខ្មែរ" },
 };
 
 export default function ThemeDropdown({ isOpen, onClose, selectedTheme, onSelectTheme }) {
   const dropdownRef = useRef(null);
+  const { t } = useLanguage();
 
   // Close on Escape or a click outside the panel.
   useEffect(() => {
@@ -60,9 +62,8 @@ export default function ThemeDropdown({ isOpen, onClose, selectedTheme, onSelect
   return (
     <div className="theme-dropdown" ref={dropdownRef} role="menu">
       <div className="theme-dropdown-header">
-        <span className="theme-dropdown-title">Theme &amp; Category</span>
-        <span className="theme-dropdown-title-km" lang="km">
-          រចនាបថ
+        <span className="theme-dropdown-title">
+          {t({ en: "Theme & Category", km: "រចនាបថ និងប្រភេទ" })}
         </span>
       </div>
 
@@ -84,10 +85,7 @@ export default function ThemeDropdown({ isOpen, onClose, selectedTheme, onSelect
               <span className="theme-option-main">
                 <ThemeVibeIcon motif={themes[key].motifType} size={15} />
                 <span className="theme-option-labels">
-                  <span className="theme-option-en">{SHORT_LABELS[key].en}</span>
-                  <span className="theme-option-km" lang="km">
-                    {SHORT_LABELS[key].km}
-                  </span>
+                  <span className="theme-option-en">{t(SHORT_LABELS[key])}</span>
                 </span>
               </span>
               {isSelected && (

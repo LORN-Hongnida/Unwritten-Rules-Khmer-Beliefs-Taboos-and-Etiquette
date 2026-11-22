@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import SiteNav from '../../components/SiteNav';
 import ThemeAtmosphereBackdrop from '../../components/ThemeAtmosphereBackdrop';
 import { useTheme } from '../../components/ThemeProvider';
+import { useLanguage } from '../../components/LanguageProvider';
 import { ThemeVibeIcon } from '../../components/KbachMotifs';
 import { createClient } from '../../lib/supabase/client';
 import BilingualMessage from '../../components/BilingualMessage';
@@ -77,6 +78,7 @@ function validateLogin(emailVal, passVal) {
 
 export default function LoginPage() {
   const { selectedTheme, setSelectedTheme, isDark, toggleMode } = useTheme();
+  const { t } = useLanguage();
   const router = useRouter();
 
   const [email, setEmail] = useState('');
@@ -185,12 +187,11 @@ export default function LoginPage() {
               <div className="auth-motif" aria-hidden="true">
                 <ThemeVibeIcon motif="etiquette" size={22} />
               </div>
-              <h1 className="auth-title">ចូលគណនី</h1>
-              <div className="auth-title-sub">Contributor Login</div>
+              <h1 className="auth-title">{t({ en: 'Contributor Login', km: 'ចូលគណនី' })}</h1>
               <p className="auth-description">
                 <BilingualMessage
                   en="Sign in to manage cultural entries in the archive."
-                  km="ចូលគណនីដើម្បីគ្រប់គ្រងធាតុវប្បធម៌ក្នុងបណ្ណាល័យ។"
+                  km="ចូលគណនីដើម្បីគ្រប់គ្រងធាតុវប្បធម៌ក្នុងបណ្ណសារ។"
                 />
               </p>
             </div>
@@ -205,9 +206,8 @@ export default function LoginPage() {
               <div className="auth-field">
                 <label className="auth-label" htmlFor="email-input">
                   <span>
-                    Email <span className="auth-required">*</span>
+                    {t({ en: 'Email', km: 'អ៊ីមែល' })} <span className="auth-required">*</span>
                   </span>
-                  <span className="auth-label-km">អ៊ីមែល</span>
                 </label>
                 <input
                   id="email-input"
@@ -229,9 +229,8 @@ export default function LoginPage() {
               <div className="auth-field">
                 <label className="auth-label" htmlFor="password-input">
                   <span>
-                    Password <span className="auth-required">*</span>
+                    {t({ en: 'Password', km: 'ពាក្យសម្ងាត់' })} <span className="auth-required">*</span>
                   </span>
-                  <span className="auth-label-km">ពាក្យសម្ងាត់</span>
                 </label>
                 <div className="auth-input-wrapper">
                   <input
@@ -248,8 +247,8 @@ export default function LoginPage() {
                     type="button"
                     className="auth-password-toggle"
                     onClick={() => setShowPassword((show) => !show)}
-                    title={showPassword ? 'Hide password' : 'Show password'}
-                    aria-label={showPassword ? 'Hide password' : 'Show password'}
+                    title={t(showPassword ? { en: 'Hide password', km: 'លាក់ពាក្យសម្ងាត់' } : { en: 'Show password', km: 'បង្ហាញពាក្យសម្ងាត់' })}
+                    aria-label={t(showPassword ? { en: 'Hide password', km: 'លាក់ពាក្យសម្ងាត់' } : { en: 'Show password', km: 'បង្ហាញពាក្យសម្ងាត់' })}
                   >
                     {showPassword ? <EyeOffIcon /> : <EyeIcon />}
                   </button>
@@ -266,14 +265,14 @@ export default function LoginPage() {
                 className="auth-submit"
                 disabled={loading}
               >
-                {loading ? 'Signing in... / កំពុងចូល...' : 'Sign In / ចូលគណនី'}
+                {loading ? t({ en: 'Signing in…', km: 'កំពុងចូល…' }) : t({ en: 'Sign In', km: 'ចូលគណនី' })}
               </button>
             </form>
 
             <div className="auth-footer">
-              Don&apos;t have a contributor account?
+              {t({ en: "Don't have a contributor account?", km: 'មិនទាន់មានគណនីអ្នករួមចំណែក?' })}
               <Link href="/signup" className="auth-link">
-                Sign up
+                {t({ en: 'Sign up', km: 'បង្កើតគណនី' })}
               </Link>
             </div>
           </div>

@@ -1,6 +1,7 @@
 'use client';
 
 import { KbachCorner, KhmerFriezeBorder, ThemeVibeIcon } from "./KbachMotifs";
+import { useLanguage } from "./LanguageProvider";
 import themes from "../data/themes.js";
 
 export default function HeroSection({
@@ -10,9 +11,18 @@ export default function HeroSection({
   onBrowse,
   selectedTheme = "all",
 }) {
+  const { language, t } = useLanguage();
   const theme = themes[selectedTheme];
   const motif = theme.motifType;
   const copy = theme.hero;
+
+  // The big title is in the reader's language; the smaller line above it is
+  // the other language, so the hero always carries both and they swap places
+  // when the toggle is pressed.
+  const km = { title: copy.titleKm, subtitle: copy.subtitleKm, lang: "km" };
+  const en = { title: copy.titleEn, subtitle: copy.subtitleEn, lang: "en" };
+  const main = language === "km" ? km : en;
+  const top = language === "km" ? en : km;
 
   return (
     <header className="hero">
@@ -32,26 +42,26 @@ export default function HeroSection({
           <span className="hero-motif" aria-hidden="true">
             <ThemeVibeIcon motif={motif} size={28} />
           </span>
-          <h2 lang="km">{copy.titleKm}</h2>
+          <h2 lang={top.lang}>{top.title}</h2>
           <span className="hero-motif hero-motif-flipped" aria-hidden="true">
             <ThemeVibeIcon motif={motif} size={28} />
           </span>
         </div>
 
-        <p className="hero-khmer-subtitle" lang="km">
-          {copy.subtitleKm}
+        <p className="hero-khmer-subtitle" lang={top.lang}>
+          {top.subtitle}
         </p>
 
-        <h1 className="hero-title">
-          {copy.titleEn}
-          <span className="hero-title-sub">{copy.subtitleEn}</span>
+        <h1 className="hero-title" lang={main.lang}>
+          {main.title}
+          <span className="hero-title-sub">{main.subtitle}</span>
         </h1>
 
-        <p className="hero-description">{copy.description}</p>
+        <p className="hero-description">{t({ en: copy.description, km: copy.descriptionKm })}</p>
 
         <div className="hero-actions">
           <button type="button" className="hero-cta hero-cta-primary" onClick={onBrowse}>
-            <span>Browse Archive ({entryCount})</span>
+            <span>{t({ en: 'Browse Archive', km: 'រុករកបណ្ណសារ' })} ({entryCount})</span>
             <span className="hero-cta-arrow" aria-hidden="true">→</span>
           </button>
         </div>
@@ -59,16 +69,16 @@ export default function HeroSection({
         <div className="hero-stats">
           <div className="hero-stat">
             <strong>{entryCount}</strong>
-            <span>Preserved Traditions</span>
+            <span>{t({ en: 'Preserved Traditions', km: 'ទំនៀមទម្លាប់ដែលបានរក្សាទុក' })}</span>
           </div>
           <span className="hero-stat-dot" aria-hidden="true">•</span>
           <div className="hero-stat">
             <strong>{categoryCount}</strong>
-            <span>Cultural Categories</span>
+            <span>{t({ en: 'Cultural Categories', km: 'ប្រភេទវប្បធម៌' })}</span>
           </div>
           <span className="hero-stat-dot" aria-hidden="true">•</span>
           <div className="hero-stat">
-            <span>Curated by {curator}</span>
+            <span>{t({ en: 'Curated by', km: 'រៀបចំដោយ' })} {curator}</span>
           </div>
         </div>
       </div>

@@ -2,6 +2,7 @@
 
 import themes, { THEME_ORDER } from "../data/themes.js";
 import { ThemeVibeIcon } from "./KbachMotifs";
+import { useLanguage } from "./LanguageProvider";
 
 const PILL_LABELS = {
   all: { en: "All", km: "ទាំងអស់" },
@@ -49,6 +50,7 @@ export default function SearchAndFilter({
   counts,
   resultCount,
 }) {
+  const { t } = useLanguage();
   const hasFilters = searchTerm !== "" || selectedTheme !== "all";
 
   return (
@@ -62,16 +64,19 @@ export default function SearchAndFilter({
           className="search-input"
           value={searchTerm}
           onChange={(e) => onSearchChange(e.target.value)}
-          placeholder="Search by English, Khmer (ឧ. ក្អែក, ត្រី, ក្បាល), or origin..."
-          aria-label="Search the archive"
+          placeholder={t({
+            en: "Search in English or Khmer, or by place...",
+            km: "ស្វែងរកជាភាសាខ្មែរ ឬអង់គ្លេស ឬតាមទីកន្លែង (ឧ. ក្អែក ត្រី ក្បាល)...",
+          })}
+          aria-label={t({ en: "Search the archive", km: "ស្វែងរកក្នុងបណ្ណសារ" })}
         />
         {searchTerm && (
           <button
             type="button"
             className="search-clear"
             onClick={() => onSearchChange("")}
-            title="Clear search"
-            aria-label="Clear search"
+            title={t({ en: "Clear search", km: "សម្អាតការស្វែងរក" })}
+            aria-label={t({ en: "Clear search", km: "សម្អាតការស្វែងរក" })}
           >
             <ClearIcon />
           </button>
@@ -81,7 +86,7 @@ export default function SearchAndFilter({
       <div className="filter-block">
         <p className="filter-label">
           <FilterIcon />
-          <span>Category (ជំពូក)</span>
+          <span>{t({ en: "Category", km: "ជំពូក" })}</span>
         </p>
 
         <div className="filter-pills">
@@ -96,10 +101,7 @@ export default function SearchAndFilter({
                 aria-pressed={isActive}
               >
                 {isActive && <ThemeVibeIcon motif={themes[key].motifType} size={12} />}
-                <span>{PILL_LABELS[key].en}</span>
-                <span className="filter-pill-km" lang="km">
-                  {PILL_LABELS[key].km}
-                </span>
+                <span>{t(PILL_LABELS[key])}</span>
                 <span className="filter-pill-count">{counts[key]}</span>
               </button>
             );
@@ -109,8 +111,8 @@ export default function SearchAndFilter({
 
       <div className="filter-status">
         <span>
-          Showing <strong>{resultCount}</strong>{" "}
-          {resultCount === 1 ? "tradition" : "traditions"}
+          {t({ en: "Showing", km: "បង្ហាញ" })} <strong>{resultCount}</strong>{" "}
+          {t({ en: resultCount === 1 ? "tradition" : "traditions", km: "ទំនៀមទម្លាប់" })}
         </span>
 
         {hasFilters && (
@@ -122,7 +124,7 @@ export default function SearchAndFilter({
               onSelectTheme("all");
             }}
           >
-            Reset filters (សម្អាតតម្រង)
+            {t({ en: "Reset filters", km: "សម្អាតតម្រង" })}
           </button>
         )}
       </div>

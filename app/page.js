@@ -10,6 +10,7 @@ import ThemeAtmosphereBackdrop from "../components/ThemeAtmosphereBackdrop";
 import themes from "../data/themes.js";
 import { ThemeVibeIcon } from "../components/KbachMotifs";
 import { useTheme } from "../components/ThemeProvider";
+import { useLanguage } from "../components/LanguageProvider";
 import useEntryRoute from "../components/useEntryRoute";
 import useEntries from "../components/useEntries";
 
@@ -17,6 +18,7 @@ import useEntries from "../components/useEntries";
 const HOME_SAMPLE_SIZE = 6;
 
 export default function Home() {
+  const { t } = useLanguage();
   const { selectedTheme, setSelectedTheme, isDark, toggleMode } = useTheme();
   const { entries, loading } = useEntries();
   const { openEntry, setOpenEntry, buildHref } = useEntryRoute(entries);
@@ -85,14 +87,16 @@ export default function Home() {
                 <span className="entries-motif" aria-hidden="true">
                   <ThemeVibeIcon motif={themes[selectedTheme].motifType} size={20} />
                 </span>
-                <h2 className="entries-title" lang="km">
-                  {themes[selectedTheme].nameKm}
+                <h2 className="entries-title">
+                  {t({ en: themes[selectedTheme].nameEn, km: themes[selectedTheme].nameKm })}
                 </h2>
               </div>
               <p className="entries-subtitle">
-                {themes[selectedTheme].nameEn}
                 <span className="entries-subtitle-count">
-                  {" "}· showing {shownEntries.length} of {themedEntries.length}
+                  {t({
+                    en: `Showing ${shownEntries.length} of ${themedEntries.length}`,
+                    km: `បង្ហាញ ${shownEntries.length} ក្នុងចំណោម ${themedEntries.length}`,
+                  })}
                 </span>
               </p>
             </div>
@@ -106,7 +110,7 @@ export default function Home() {
               }
               className="entries-browse-link"
             >
-              <span>Browse the archive</span>
+              <span>{t({ en: 'Browse the archive', km: 'រុករកបណ្ណសារ' })}</span>
               <span className="entries-browse-arrow" aria-hidden="true">→</span>
             </Link>
           </div>
@@ -116,9 +120,8 @@ export default function Home() {
               /* Until the fetch settles there is nothing to conclude: saying
                  "no entries" would read as an empty archive. */
               <div className="empty-state">
-                <p className="empty-state-title">Loading entries…</p>
-                <p className="empty-state-title-km" lang="km">
-                  កំពុងផ្ទុកកំណត់ត្រា…
+                <p className="empty-state-title">
+                  {t({ en: 'Loading entries…', km: 'កំពុងផ្ទុកកំណត់ត្រា…' })}
                 </p>
               </div>
             ) : shownEntries.length > 0 ? (
@@ -127,12 +130,8 @@ export default function Home() {
               ))
             ) : (
               <div className="empty-state">
-                <p className="empty-state-title">No entries found</p>
-                <p className="empty-state-title-km" lang="km">
-                  រកមិនឃើញកំណត់ត្រា
-                </p>
-                <p className="empty-state-hint">
-                  Try a different search term / សូមសាកល្បងពាក្យស្វែងរកផ្សេង
+                <p className="empty-state-title">
+                  {t({ en: 'No entries found', km: 'រកមិនឃើញកំណត់ត្រា' })}
                 </p>
               </div>
             )}
@@ -156,13 +155,15 @@ export default function Home() {
               <p className="site-footer-wordmark">{collection.name}</p>
 
               <p className="site-footer-dedication">
-                Dedicated with gratitude to the grandmothers, grandfathers, and
-                oral storytellers who preserved these customs.
+                {t({
+                  en: 'Dedicated with gratitude to the grandmothers, grandfathers, and oral storytellers who preserved these customs.',
+                  km: 'ឧទ្ទិសដោយការដឹងគុណចំពោះលោកយាយ លោកតា និងអ្នកនិទានរឿងតាមមាត់ ដែលបានថែរក្សាទំនៀមទម្លាប់ទាំងនេះ។',
+                })}
               </p>
             </div>
 
             <div className="site-footer-col site-footer-col-academic">
-              <h3 className="site-footer-col-title">Academic Note</h3>
+              <h3 className="site-footer-col-title">{t({ en: 'Academic Note', km: 'កំណត់សម្គាល់សិក្សា' })}</h3>
               <p className="site-footer-institution">
                 American University of Phnom Penh
               </p>
@@ -175,10 +176,10 @@ export default function Home() {
 
           <div className="site-footer-bottom">
             <p className="site-footer-copyright">
-              © 2026 {collection.name}. Curated by <strong>{collection.curator}</strong>.
+              © 2026 {collection.name}. {t({ en: 'Curated by', km: 'រៀបចំដោយ' })} <strong>{collection.curator}</strong>.
             </p>
             <a href="#top" className="site-footer-top" onClick={scrollToTop}>
-              Back to top ↑
+              {t({ en: 'Back to top', km: 'ត្រឡប់ទៅខាងលើ' })} ↑
             </a>
           </div>
         </div>

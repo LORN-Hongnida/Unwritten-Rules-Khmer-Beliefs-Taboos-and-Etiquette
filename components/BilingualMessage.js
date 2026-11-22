@@ -1,20 +1,13 @@
 'use client';
 
-// Every message a contributor can be shown carries both languages. The Khmer
-// half is marked up with lang and its own face because the Latin fonts have no
-// Khmer coverage and would fall back to whatever the system supplies.
+import { useLanguage } from './LanguageProvider';
+
+// Every message a contributor can be shown is written in both languages, and
+// shows the one the reader chose with the language toggle. If a message only
+// has one half, that half is shown rather than nothing.
 export default function BilingualMessage({ en, km }) {
+  const { language } = useLanguage();
   if (!en && !km) return null;
 
-  return (
-    <>
-      {en}
-      {en && km ? ' ' : null}
-      {km ? (
-        <span className="msg-km" lang="km">
-          {km}
-        </span>
-      ) : null}
-    </>
-  );
+  return <>{language === 'km' ? (km || en) : (en || km)}</>;
 }

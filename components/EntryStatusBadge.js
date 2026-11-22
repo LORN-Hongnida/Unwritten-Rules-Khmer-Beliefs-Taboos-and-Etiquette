@@ -1,5 +1,7 @@
 'use client';
 
+import { useLanguage } from './LanguageProvider';
+
 // Where an entry stands, in plain words rather than the database's vocabulary.
 // A contributor should never have to learn what 'pending' means to find out
 // whether their grandmother's belief made it into the archive.
@@ -10,7 +12,7 @@ const STATUS_WORDS = {
     color: 'var(--accent)',
   },
   published: {
-    km: 'នៅក្នុងបណ្ណាល័យ',
+    km: 'នៅក្នុងបណ្ណសារ',
     en: 'In the archive',
     color: 'var(--accent)',
   },
@@ -22,6 +24,7 @@ const STATUS_WORDS = {
 };
 
 export default function EntryStatusBadge({ status }) {
+  const { t } = useLanguage();
   const words = STATUS_WORDS[status];
 
   // An unknown status is a real thing to say: silence would read as published.
@@ -48,9 +51,7 @@ export default function EntryStatusBadge({ status }) {
         border: `1px solid ${words.color}`,
       }}
     >
-      <span lang="km">{words.km}</span>
-      <span aria-hidden="true" style={{ opacity: 0.5 }}>·</span>
-      <span>{words.en}</span>
+      <span>{t(words)}</span>
     </span>
   );
 }
