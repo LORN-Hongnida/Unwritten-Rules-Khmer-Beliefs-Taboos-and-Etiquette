@@ -51,10 +51,11 @@ BEGIN;
 -- constraint allows could be refused by the old one mid-migration.
 ALTER TABLE public.entries DROP CONSTRAINT IF EXISTS entries_status_check;
 
--- Everything already in the archive came from the curator and their named
--- sources, so it is published. This also clears out any 'draft' or 'rejected'
--- row before the narrower constraint arrives.
-UPDATE public.entries SET status = 'published' WHERE status <> 'published';
+-- Only the retired values are moved, so the narrower constraint can arrive.
+-- This used to be `WHERE status <> 'published'`, which was fine the first time
+-- but not safe to run twice: every re-run published every pending and returned
+-- submission, skipping the reviewer entirely.
+UPDATE public.entries SET status = 'published' WHERE status IN ('draft', 'rejected');
 
 ALTER TABLE public.entries ALTER COLUMN status SET DEFAULT 'pending';
 ALTER TABLE public.entries
@@ -157,23 +158,25 @@ CREATE POLICY "owners add their own entries"
 -- that opens once and stays open is not a gate. Reviewers keep theirs published.
 DROP POLICY IF EXISTS "Owners can update own entries" ON public.entries;
 DROP POLICY IF EXISTS "owners edit their own entries" ON public.entries;
+-- Reviewers are the site's admins, so they may edit any entry and leave its
+-- status as it is. Everyone else edits only their own, and only into pending.
 CREATE POLICY "owners edit their own entries"
   ON public.entries
   FOR UPDATE TO authenticated
-  USING ((SELECT auth.uid()) = owner)
+  USING ((SELECT auth.uid()) = owner OR (SELECT public.is_reviewer()))
   WITH CHECK (
-    (SELECT auth.uid()) = owner
-    AND (status = 'pending' OR (SELECT public.is_reviewer()))
+    (SELECT public.is_reviewer())
+    OR ((SELECT auth.uid()) = owner AND status = 'pending')
   );
 
 COMMIT;
 
--- Policy 4: Owners can delete their own entries
+-- Policy 4: owners delete their own entries; reviewers (admins) delete any.
 DROP POLICY IF EXISTS "Owners can delete own entries" ON public.entries;
 CREATE POLICY "Owners can delete own entries"
   ON public.entries
-  FOR DELETE
-  USING (auth.uid() = owner);
+  FOR DELETE TO authenticated
+  USING ((SELECT auth.uid()) = owner OR (SELECT public.is_reviewer()));
 
 -- 2.1 Table Check Constraints (Part 3)
 ALTER TABLE public.entries DROP CONSTRAINT IF EXISTS entries_title_check;
@@ -228,6 +231,103 @@ DROP POLICY IF EXISTS "contributors delete their own photos" ON storage.objects;
 create policy "contributors delete their own photos"
   on storage.objects for delete to authenticated
   using (bucket_id = 'photos' and (storage.foldername(name))[1] = (select auth.uid()::text));
+
+-- ============================================================
+-- 2.3 Profiles: the name a submitter is shown under
+-- ============================================================
+-- auth.users is private, so a visitor cannot look up who owns an entry. This
+-- table holds only what is meant to be public: an id and a chosen name. No
+-- email, ever.
+CREATE TABLE IF NOT EXISTS public.profiles (
+  id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+  display_name TEXT CHECK (display_name IS NULL OR char_length(display_name) <= 50)
+);
+ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
+
+-- Reading only. There is no insert or update policy: the trigger below is the
+-- one way a profile is written, so nobody can claim someone else's name.
+DROP POLICY IF EXISTS "anyone can read display names" ON public.profiles;
+CREATE POLICY "anyone can read display names"
+  ON public.profiles
+  FOR SELECT
+  USING (true);
+
+-- Runs inside Supabase's own sign-up, as the table owner, so it works even when
+-- email confirmation means the new user has no session yet. The name is
+-- trimmed and cut to 50 characters here: if it broke the CHECK instead, the
+-- whole sign-up would fail.
+CREATE OR REPLACE FUNCTION public.handle_new_user()
+RETURNS trigger
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = ''
+AS $$
+BEGIN
+  INSERT INTO public.profiles (id, display_name)
+  VALUES (NEW.id, left(nullif(trim(NEW.raw_user_meta_data ->> 'display_name'), ''), 50))
+  ON CONFLICT (id) DO NOTHING;
+  RETURN NEW;
+END;
+$$;
+
+DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
+CREATE TRIGGER on_auth_user_created
+  AFTER INSERT ON auth.users
+  FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
+
+-- Accounts made before this existed get a profile with no name. Safe to run
+-- twice: existing profiles are left alone.
+INSERT INTO public.profiles (id, display_name)
+SELECT id, left(nullif(trim(raw_user_meta_data ->> 'display_name'), ''), 50)
+FROM auth.users
+ON CONFLICT (id) DO NOTHING;
+
+-- ============================================================
+-- 2.4 Re-review: what an edit to a published entry changed
+-- ============================================================
+-- An author's edit to a published entry sends it back to pending (the update
+-- policy insists). This keeps a copy of the entry as it was last published, so
+-- the reviewer sees what changed instead of re-reading it from scratch.
+ALTER TABLE public.entries ADD COLUMN IF NOT EXISTS previous_version JSONB;
+
+-- Written by a trigger, not by the page: the author is allowed to update their
+-- own row, so a value the page sent could be blanked or forged to hide what
+-- was changed. Here the database decides, and ignores whatever was sent.
+CREATE OR REPLACE FUNCTION public.track_previous_version()
+RETURNS trigger
+LANGUAGE plpgsql
+SET search_path = ''
+AS $$
+BEGIN
+  -- A brand-new entry has no earlier version, whatever the request says.
+  IF TG_OP = 'INSERT' THEN
+    NEW.previous_version := NULL;
+    RETURN NEW;
+  END IF;
+
+  IF OLD.status = 'published' AND NEW.status = 'pending' THEN
+    -- Leaving the archive for re-review: remember what the public saw.
+    NEW.previous_version := jsonb_build_object(
+      'title', OLD.title, 'title_km', OLD.title_km, 'category', OLD.category,
+      'description', OLD.description, 'reason', OLD.reason,
+      'still_believed', OLD.still_believed, 'place', OLD.place,
+      'contributor', OLD.contributor, 'photo_url', OLD.photo_url);
+  ELSIF NEW.status = 'published' THEN
+    -- Approved (or an admin's edit to a published entry): nothing is waiting.
+    NEW.previous_version := NULL;
+  ELSE
+    -- Any other update (a second edit while pending, a return) keeps the copy
+    -- of the last published version, whatever the request tried to send.
+    NEW.previous_version := OLD.previous_version;
+  END IF;
+  RETURN NEW;
+END;
+$$;
+
+DROP TRIGGER IF EXISTS entries_track_previous_version ON public.entries;
+CREATE TRIGGER entries_track_previous_version
+  BEFORE INSERT OR UPDATE ON public.entries
+  FOR EACH ROW EXECUTE FUNCTION public.track_previous_version();
 
 -- ============================================================
 -- 3. Seed Initial Collection Data (from data/entries.js)
