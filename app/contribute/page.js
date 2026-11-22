@@ -24,6 +24,23 @@ const MAX_FILE_SIZE = 5242880; // 5 MB
 
 // Messages live together rather than inline so the two languages stay in step:
 // an English string edited on its own would otherwise drift from its Khmer.
+// Which input each validation error belongs to, so a failed submit can take
+// the contributor straight to the first problem instead of leaving them at
+// the bottom of a long form wondering why nothing happened.
+const FIELD_IDS = {
+  titleKm: 'entry-title-km',
+  title: 'entry-title',
+  description: 'entry-description',
+  reason: 'entry-reason',
+  contributor: 'entry-contributor',
+  place: 'entry-place',
+  stillBelieved: 'entry-still-believed',
+};
+
+// Supabase errors print as {} because their fields are not enumerable.
+const describeError = (error) =>
+  error ? [error.code, error.message, error.details, error.hint].filter(Boolean).join(' | ') : 'no rows returned';
+
 const MESSAGES = {
   titleRequired: { en: 'English title is required.', km: 'តម្រូវឱ្យមានចំណងជើងជាភាសាអង់គ្លេស។' },
   titleLength: { en: 'Title must be between 3 and 150 characters.', km: 'ចំណងជើងត្រូវមានពី ៣ ទៅ ១៥០ តួអក្សរ។' },
@@ -46,6 +63,7 @@ const MESSAGES = {
   updateFailed: { en: "That change wasn't saved.", km: 'ការកែប្រែមិនបានរក្សាទុកទេ។' },
   saveFailed: { en: 'Failed to save entry. Please try again.', km: 'មិនអាចរក្សាទុកទិន្នន័យបានទេ។ សូមព្យាយាមម្តងទៀត។' },
   unexpected: { en: 'An unexpected error occurred while saving.', km: 'មានបញ្ហាមិននឹកស្មានក្នុងពេលរក្សាទុក។' },
+  fixErrors: { en: 'Some fields need attention before this can be submitted.', km: 'មានចន្លោះខ្លះត្រូវកែមុនពេលដាក់ស្នើ។' },
 };
 
 function getFileExtension(filename) {
@@ -340,6 +358,14 @@ export default function ContributePage() {
     setFieldErrors(errors);
 
     if (Object.keys(errors).length > 0) {
+      setFormError(MESSAGES.fixErrors);
+      // In form order, so the first one on screen is the one shown.
+      const firstId = Object.keys(FIELD_IDS).map((k) => errors[k] && FIELD_IDS[k]).find(Boolean);
+      const field = firstId && document.getElementById(firstId);
+      if (field) {
+        field.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        field.focus({ preventScroll: true });
+      }
       return;
     }
 
@@ -370,7 +396,7 @@ export default function ContributePage() {
           });
 
         if (uploadError) {
-          console.error('Storage upload failed:', uploadError);
+          console.error('Storage upload failed:', describeError(uploadError));
           setFormError(MESSAGES.uploadFailed);
           setLoading(false);
           return;
@@ -419,7 +445,7 @@ export default function ContributePage() {
           .select();
 
         if (error || !data || data.length === 0) {
-          console.error('Update refused or failed:', error);
+          console.error('Update refused or failed:', describeError(error));
           setFormError(MESSAGES.updateFailed);
           setLoading(false);
           return;
@@ -443,7 +469,7 @@ export default function ContributePage() {
           .select();
 
         if (error || !data || data.length === 0) {
-          console.error('Insert refused or failed:', error);
+          console.error('Insert refused or failed:', describeError(error));
           setFormError(MESSAGES.saveFailed);
           setLoading(false);
           return;
@@ -913,6 +939,15 @@ export default function ContributePage() {
                     )}
                   </div>
                 </div>
+
+                {/* Repeated here because the button is where the contributor is
+                    looking: the same message at the top of the form is
+                    usually scrolled out of view when they press Submit. */}
+                {formError && (
+                  <div className="auth-error" style={{ marginBottom: '12px' }}>
+                    <BilingualMessage en={formError.en} km={formError.km} />
+                  </div>
+                )}
 
                 {/* Submit Action */}
                 <button
